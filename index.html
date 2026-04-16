@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mesinkira NFC PayWave Interface</title>
+  <style>
+    :root {
+        --primary-blue: #2d59e6;
+        --primary-yellow: #ffdb00;
+        --grey-primary: #222222;
+        --yellow-primary: #fed600;
+        --totl-primary-background: rgba(255, 255, 255, .8);
+        --totl-primary-font-color: #000;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--totl-primary-background);
+      color: var(--totl-primary-font-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 350px;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--primary-blue);
+      font-size: 2rem;
+    }
+
+    .payment-btn {
+      background-color: var(--yellow-primary);
+      color: var(--grey-primary);
+      padding: 15px;
+      font-size: 1.25rem;
+      width: 100%;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .payment-btn:hover {
+      background-color: var(--primary-yellow);
+    }
+
+    .payment-info {
+      margin-top: 20px;
+      color: var(--grey-primary);
+    }
+
+    .nfc-card {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+      padding: 10px;
+      background-color: var(--primary-blue);
+      border-radius: 12px;
+      color: white;
+      font-size: 1.5rem;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>PayWave NFC</h1>
+    <p>Silakan sentuh kad NFC anda untuk membayar.</p>
+    
+    <button class="payment-btn">Pembayaran melalui NFC</button>
+    
+    <div class="payment-info">
+      <p>Jumlah yang perlu dibayar: <strong>RM 150.00</strong></p>
+    </div>
+
+    <div class="nfc-card">
+      NFC Pembayaran Berjaya
+    </div>
+  </div>
+
+</body>
+</html>
