@@ -3,149 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bayar dengan NFC - Mesinkira</title>
+  <title>Admin & Payment Dashboard</title>
   <style>
-    :root {
-        --primary-blue: #2d59e6;
-        --primary-yellow: #ffdb00;
-        --grey-primary: #222222;
-        --yellow-primary: #fed600;
-        --totl-primary-background: rgba(255, 255, 255, .8);
-        --totl-primary-font-color: #000;
-    }
-
+    /* Styling untuk dashboard */
     body {
       font-family: Arial, sans-serif;
-      background-color: var(--totl-primary-background);
-      color: var(--totl-primary-font-color);
+      background-color: #f7f7f7;
       margin: 0;
       padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
     }
 
     .container {
-      background-color: white;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      padding: 40px;
-      width: 400px;
-      text-align: center;
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     h1 {
-      color: var(--primary-blue);
-      font-size: 2rem;
+      color: #2d59e6;
+      text-align: center;
     }
 
-    .payment-btn {
-      background-color: var(--yellow-primary);
-      color: var(--grey-primary);
-      padding: 15px;
-      font-size: 1.25rem;
-      width: 100%;
-      border-radius: 10px;
-      cursor: pointer;
-      border: none;
-      transition: background-color 0.3s ease;
-    }
-
-    .payment-btn:hover {
-      background-color: var(--primary-yellow);
+    .dashboard-section {
+      margin-bottom: 30px;
     }
 
     .input-group {
-      margin-top: 20px;
+      margin-bottom: 15px;
     }
 
-    .input-group input, .input-group select {
+    label {
+      font-weight: bold;
+    }
+
+    input, select {
       width: 100%;
       padding: 10px;
-      margin: 10px 0;
+      margin: 5px 0;
       border-radius: 8px;
       border: 1px solid #ccc;
     }
 
-    .payment-info {
-      margin-top: 20px;
-      color: var(--grey-primary);
+    button {
+      background-color: #2d59e6;
+      color: white;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
     }
 
-    .nfc-card {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 20px;
-      padding: 10px;
-      background-color: var(--primary-blue);
-      border-radius: 12px;
-      color: white;
-      font-size: 1.5rem;
+    button:hover {
+      background-color: #1e47a0;
     }
-    
+
+    .message {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .qr-box, .paywave-box {
+      margin-top: 10px;
+      padding: 20px;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .qr-box img, .paywave-box img {
+      max-width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>Bayar Dengan NFC</h1>
-    <p>Masukkan jumlah bayaran anda di bawah.</p>
+<div class="container">
 
-    <!-- Input for amount -->
+  <!-- Admin Dashboard Section -->
+  <div class="dashboard-section">
+    <h1>Admin Dashboard</h1>
     <div class="input-group">
-      <label for="amount">Jumlah Bayaran (MYR):</label>
-      <input type="number" id="amount" placeholder="Masukkan jumlah bayaran" />
+      <label for="account">Nombor Akaun Bank (Admin)</label>
+      <input type="text" id="admin-account" placeholder="Masukkan nombor akaun bank untuk penerimaan pembayaran" />
     </div>
+    <button onclick="saveAdminAccount()">Simpan Nombor Akaun</button>
+    <div class="message" id="admin-message"></div>
+  </div>
 
-    <!-- Select bank -->
+  <!-- Payment Dashboard Section -->
+  <div class="dashboard-section">
+    <h1>Payment Dashboard</h1>
     <div class="input-group">
-      <label for="bank">Pilih Bank:</label>
-      <select id="bank">
-        <option value="bankA">Maybank</option>
-        <option value="bankB">CIMB</option>
-        <option value="bankC">Public Bank</option>
-        <option value="bankD">RHB</option>
+      <label for="payment-amount">Jumlah Bayaran (MYR)</label>
+      <input type="number" id="payment-amount" placeholder="Masukkan jumlah bayaran" />
+    </div>
+    
+    <div class="input-group">
+      <label for="payment-method">Pilih Kaedah Pembayaran</label>
+      <select id="payment-method">
+        <option value="qr">QR Code</option>
+        <option value="paywave">PayWave (NFC)</option>
       </select>
     </div>
 
-    <!-- Input for bank account -->
-    <div class="input-group">
-      <label for="account">Nombor Akaun Bank:</label>
-      <input type="text" id="account" placeholder="Masukkan nombor akaun bank" />
+    <button onclick="processPayment()">Proses Pembayaran</button>
+
+    <!-- QR and Paywave Options -->
+    <div class="qr-box" id="qr-box">
+      <h3>QR Code Pembayaran</h3>
+      <img src="https://via.placeholder.com/300x300.png?text=QR+Code+Pembayaran" alt="QR Code" />
+      <p>Sila imbas kod QR untuk membuat pembayaran.</p>
     </div>
 
-    <!-- Pay button -->
-    <button class="payment-btn" onclick="processPayment()">Pembayaran melalui NFC</button>
-
-    <div class="payment-info">
-      <p>Jumlah yang perlu dibayar: <strong>RM 150.00</strong></p>
-    </div>
-
-    <div class="nfc-card">
-      NFC Pembayaran Berjaya
+    <div class="paywave-box" id="paywave-box">
+      <h3>PayWave NFC</h3>
+      <p>Sentuh kad debit atau kredit anda pada peranti NFC untuk membuat pembayaran.</p>
     </div>
   </div>
 
-  <script>
-    // Simulasi pembayaran NFC
-    function processPayment() {
-      const amount = document.getElementById('amount').value;
-      const bank = document.getElementById('bank').value;
-      const account = document.getElementById('account').value;
+</div>
 
-      if (!amount || !account) {
-        alert("Sila pastikan semua maklumat telah dimasukkan dengan betul.");
-        return;
-      }
+<script>
+  // Admin Dashboard
+  let adminAccount = localStorage.getItem("adminAccount");
 
-      // Simulate NFC transaction processing
-      alert(`Pembayaran sebanyak RM${amount} berjaya diproses melalui NFC ke akaun ${bank} (${account})`);
-      
-      // You can integrate with actual NFC payment API here
+  // Display saved account number (if available)
+  if (adminAccount) {
+    document.getElementById("admin-message").innerHTML = "Nombor akaun telah disimpan: " + adminAccount;
+  }
+
+  // Save Admin Account Number
+  function saveAdminAccount() {
+    const accountNumber = document.getElementById("admin-account").value;
+    if (accountNumber) {
+      adminAccount = accountNumber;
+      localStorage.setItem("adminAccount", adminAccount);
+      document.getElementById("admin-message").innerHTML = "Nombor akaun telah disimpan!";
+    } else {
+      document.getElementById("admin-message").innerHTML = "Sila masukkan nombor akaun yang sah.";
     }
-  </script>
-  
+  }
+
+  // Payment Dashboard
+  function processPayment() {
+    const amount = document.getElementById("payment-amount").value;
+    const paymentMethod = document.getElementById("payment-method").value;
+
+    if (!amount) {
+      alert("Sila masukkan jumlah bayaran.");
+      return;
+    }
+
+    if (!adminAccount) {
+      alert("Sila simpan nombor akaun terlebih dahulu.");
+      return;
+    }
+
+    if (paymentMethod === "qr") {
+      document.getElementById("qr-box").style.display = "block";
+      document.getElementById("paywave-box").style.display = "none";
+    } else if (paymentMethod === "paywave") {
+      document.getElementById("paywave-box").style.display = "block";
+      document.getElementById("qr-box").style.display = "none";
+    }
+
+    alert(`Bayaran RM${amount} akan diproses menggunakan ${paymentMethod}. Pembayaran akan masuk ke akaun ${adminAccount}`);
+  }
+</script>
+
 </body>
 </html>
