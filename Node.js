@@ -1,73 +1,363 @@
-const fetch = require('node-fetch');
-const express = require('express');
-const app = express();
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
 
-// Middleware untuk memparse body dalam format URL-encoded (seperti yang digunakan ToyyibPay)
-app.use(express.urlencoded({ extended: true }));
+loadEnvFile(path.join(__dirname, ".env"));
 
-// API key yang disediakan oleh ToyyibPay
-const API_KEY = 'iu4sht0f-mzlb-5ddg-iijw-265j9wfonsfo';
+const PORT = parsePort(process.env.PORT, 3000);
+const HOST = process.env.HOST || "0.0.0.0";
+const APP_BASE_URL = (process.env.APP_BASE_URL || `http://localhost:${PORT}`).replace(/\/+$/, "");
+const TOYYIBPAY_BASE_URL = (process.env.TOYYIBPAY_BASE_URL || "https://toyyibpay.com").replace(/\/+$/, "");
+const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY || "";
+const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE || "";
+const CREATE_BILL_URL = `${TOYYIBPAY_BASE_URL}/index.php/api/createBill`;
+const INDEX_PATH = path.join(__dirname, "index.html");
 
-// URL ToyyibPay API untuk membuat invois
-const url = "https://toyyibpay.com/index.php/api/createBill";
+const server = http.createServer(async (req, res) => {
+  try {
+    const requestUrl = new URL(req.url, APP_BASE_URL);
+    const route = requestUrl.pathname;
 
-// Fungsi untuk membuat invois menggunakan API
-async function createToyyibBill(amount, description) {
-  const params = new URLSearchParams();
-  params.append("userSecretKey", API_KEY);
-  params.append("categoryCode", "YOUR_CATEGORY_CODE");  // Gantikan dengan kategori kod anda
-  params.append("billName", description);
-  params.append("billDescription", description);
-  params.append("billAmount", amount * 100);  // Bayaran dalam sen
-  params.append("billReturnUrl", "https://yourwebsite.com/payment-success");
-  params.append("billCallbackUrl", "https://yourwebsite.com/toyyibpay/callback");
+    if (req.method === "GET" && (route === "/" || route === "/payment-status")) {
+      await sendFile(res, INDEX_PATH, "text/html; charset=utf-8");
+      return;
+    }
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: params,
-  });
+    if (req.method === "GET" && route === "/health") {
+      sendJson(res, 200, getHealthPayload());
+      return;
+    }
 
-  const result = await response.json();
-  return result;  // Akan return billCode & payment URL
+    if (req.method === "POST" && route === "/api/create-bill") {
+      const body = await parseRequestBody(req);
+      const bill = await createToyyibBill(body);
+      sendJson(res, 200, bill);
+      return;
+    }
+
+    if (req.method === "POST" && route === "/toyyibpay/callback") {
+      const callback = await parseRequestBody(req);
+      handleToyyibPayCallback(callback);
+      sendText(res, 200, "Callback diterima");
+      return;
+    }
+
+    if (req.method === "GET" && route === "/favicon.ico") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    sendJson(res, 404, { error: "Route tidak dijumpai." });
+  } catch (error) {
+    handleServerError(res, error);
+  }
+});
+
+server.listen(PORT, HOST, () => {
+  console.log(`PayPlus server berjalan pada ${APP_BASE_URL}`);
+});
+
+function parsePort(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-// Endpoint untuk mencipta invois dan mendapatkan QR Code
-app.post('/create-bill', async (req, res) => {
-  const { amount, description } = req.body;
-
-  if (!amount || !description) {
-    return res.status(400).send('Sila masukkan jumlah dan deskripsi bayaran.');
+function loadEnvFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return;
   }
+
+  const raw = fs.readFileSync(filePath, "utf8");
+  const lines = raw.split(/\r?\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue;
+    }
+
+    const separatorIndex = trimmed.indexOf("=");
+
+    if (separatorIndex === -1) {
+      continue;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    let value = trimmed.slice(separatorIndex + 1).trim();
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    if (process.env[key] === undefined) {
+      process.env[key] = value;
+    }
+  }
+}
+
+function getHealthPayload() {
+  const missing = [];
+
+  if (!TOYYIBPAY_USER_SECRET_KEY) {
+    missing.push("TOYYIBPAY_USER_SECRET_KEY");
+  }
+
+  if (!TOYYIBPAY_CATEGORY_CODE) {
+    missing.push("TOYYIBPAY_CATEGORY_CODE");
+  }
+
+  return {
+    configured: missing.length === 0,
+    missing,
+    appBaseUrl: APP_BASE_URL,
+    toyyibpayBaseUrl: TOYYIBPAY_BASE_URL
+  };
+}
+
+async function createToyyibBill(payload) {
+  const health = getHealthPayload();
+
+  if (!health.configured) {
+    throw new HttpError(500, `Konfigurasi belum lengkap: ${health.missing.join(", ")}`);
+  }
+
+  const amount = Number.parseFloat(payload.amount);
+  const description = sanitizeBillField(payload.description, 100);
+  const reference = sanitizeText(payload.reference, 80);
+  const billTo = sanitizeBillField(payload.billTo, 60);
+  const billEmail = sanitizeEmail(payload.billEmail);
+  const billPhone = sanitizePhone(payload.billPhone);
+
+  if (!Number.isFinite(amount) || amount < 1) {
+    throw new HttpError(400, "Jumlah bayaran mesti sekurang-kurangnya RM1.00.");
+  }
+
+  if (!description) {
+    throw new HttpError(400, "Deskripsi bayaran diperlukan.");
+  }
+
+  if (!billTo) {
+    throw new HttpError(400, "Nama pembayar diperlukan.");
+  }
+
+  if (!billEmail) {
+    throw new HttpError(400, "Email pembayar diperlukan.");
+  }
+
+  if (!billPhone) {
+    throw new HttpError(400, "Telefon pembayar diperlukan.");
+  }
+
+  const cents = Math.round(amount * 100);
+  const externalReference = reference || `PAYPLUS-${Date.now()}`;
+  const params = new URLSearchParams({
+    userSecretKey: TOYYIBPAY_USER_SECRET_KEY,
+    categoryCode: TOYYIBPAY_CATEGORY_CODE,
+    billName: truncate(description, 30),
+    billDescription: description,
+    billPriceSetting: "1",
+    billPayorInfo: "1",
+    billAmount: String(cents),
+    billReturnUrl: `${APP_BASE_URL}/payment-status`,
+    billCallbackUrl: `${APP_BASE_URL}/toyyibpay/callback`,
+    billExternalReferenceNo: externalReference,
+    billPaymentChannel: "0"
+  });
+
+  params.append("billTo", billTo);
+  params.append("billEmail", billEmail);
+  params.append("billPhone", billPhone);
+
+  const response = await fetch(CREATE_BILL_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: params.toString()
+  });
+
+  const raw = await response.text();
+  let parsed;
 
   try {
-    const data = await createToyyibBill(amount, description);
-    res.json({
-      message: 'Bill created successfully!',
-      paymentUrl: data.paymentUrl,  // Payment URL yang boleh digunakan untuk QR Code
-      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${data.paymentUrl}` // QR Code URL
-    });
+    parsed = JSON.parse(raw);
   } catch (error) {
-    res.status(500).send('Error creating bill');
-  }
-});
-
-// Endpoint untuk menerima callback dari ToyyibPay
-app.post('/toyyibpay/callback', (req, res) => {
-  console.log('Callback Data:', req.body);
-
-  // Semak status pembayaran (contoh: success)
-  if (req.body.status === 'Success') {
-    // Lakukan tindakan seperti mengemaskini status pesanan di database
-    console.log('Pembayaran berjaya!');
-  } else {
-    console.log('Pembayaran gagal!');
+    throw new HttpError(502, `Respons ToyyibPay tidak sah: ${raw}`);
   }
 
-  // Hantar response 200 OK untuk ToyyibPay
-  res.status(200).send('Callback diterima');
-});
+  if (!response.ok) {
+    throw new HttpError(502, `ToyyibPay memulangkan ralat HTTP ${response.status}.`);
+  }
 
-// Jalankan server pada port 3000
-app.listen(3000, () => {
-  console.log('Server berjalan pada http://localhost:3000');
-});
+  const bill = Array.isArray(parsed) ? parsed[0] : parsed;
+  const billCode = bill && (bill.BillCode || bill.billCode);
+
+  if (!billCode) {
+    throw new HttpError(502, `BillCode tidak ditemui dalam respons ToyyibPay: ${raw}`);
+  }
+
+  const paymentUrl = `${TOYYIBPAY_BASE_URL}/${billCode}`;
+
+  return {
+    amount,
+    billCode,
+    paymentUrl,
+    qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=320x320&data=${encodeURIComponent(paymentUrl)}`
+  };
+}
+
+function handleToyyibPayCallback(payload) {
+  const receivedHash = String(payload.hash || "").toLowerCase();
+  const status = String(payload.status || "");
+  const orderId = String(payload.order_id || "");
+  const refNo = String(payload.refno || "");
+
+  if (!receivedHash) {
+    throw new HttpError(400, "Hash callback tidak diterima.");
+  }
+
+  const expectedHash = crypto
+    .createHash("md5")
+    .update(`${TOYYIBPAY_USER_SECRET_KEY}${status}${orderId}${refNo}ok`)
+    .digest("hex");
+
+  if (expectedHash !== receivedHash) {
+    throw new HttpError(400, "Hash callback ToyyibPay tidak sah.");
+  }
+
+  const paymentState = getToyyibPayStatusLabel(status);
+  console.log("Callback ToyyibPay diterima:", {
+    billCode: payload.billcode,
+    orderId,
+    refNo,
+    amount: payload.amount,
+    status,
+    paymentState,
+    reason: payload.reason || "",
+    transactionTime: payload.transaction_time || "",
+    raw: payload
+  });
+}
+
+function getToyyibPayStatusLabel(status) {
+  switch (String(status)) {
+    case "1":
+      return "success";
+    case "2":
+      return "pending";
+    case "3":
+      return "failed";
+    default:
+      return "unknown";
+  }
+}
+
+async function parseRequestBody(req) {
+  const raw = await readRequest(req);
+  const contentType = req.headers["content-type"] || "";
+
+  if (!raw) {
+    return {};
+  }
+
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      throw new HttpError(400, "Body JSON tidak sah.");
+    }
+  }
+
+  if (contentType.includes("application/x-www-form-urlencoded")) {
+    const params = new URLSearchParams(raw);
+    return Object.fromEntries(params.entries());
+  }
+
+  return {};
+}
+
+function readRequest(req) {
+  return new Promise((resolve, reject) => {
+    let body = "";
+
+    req.on("data", (chunk) => {
+      body += chunk;
+
+      if (body.length > 1_000_000) {
+        reject(new HttpError(413, "Body terlalu besar."));
+        req.destroy();
+      }
+    });
+
+    req.on("end", () => resolve(body));
+    req.on("error", reject);
+  });
+}
+
+function sanitizeText(value, maxLength) {
+  return truncate(String(value || "").replace(/\s+/g, " ").trim(), maxLength);
+}
+
+function sanitizeBillField(value, maxLength) {
+  const cleaned = String(value || "")
+    .replace(/[^\p{L}\p{N}_ ]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return truncate(cleaned, maxLength);
+}
+
+function sanitizeEmail(value) {
+  return truncate(String(value || "").trim(), 120);
+}
+
+function sanitizePhone(value) {
+  return truncate(String(value || "").replace(/[^\d+]/g, "").trim(), 20);
+}
+
+function truncate(value, maxLength) {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return value.slice(0, maxLength);
+}
+
+async function sendFile(res, filePath, contentType) {
+  const data = await fs.promises.readFile(filePath);
+  res.writeHead(200, { "Content-Type": contentType });
+  res.end(data);
+}
+
+function sendJson(res, statusCode, payload) {
+  res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
+  res.end(JSON.stringify(payload));
+}
+
+function sendText(res, statusCode, message) {
+  res.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
+  res.end(message);
+}
+
+function handleServerError(res, error) {
+  if (error instanceof HttpError) {
+    sendJson(res, error.statusCode, { error: error.message });
+    return;
+  }
+
+  console.error("Ralat server:", error);
+  sendJson(res, 500, { error: "Ralat dalaman server." });
+}
+
+class HttpError extends Error {
+  constructor(statusCode, message) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}

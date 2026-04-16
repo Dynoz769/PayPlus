@@ -3,25 +3,678 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bayar Dengan QR</title>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <title>PayPlus | Bayaran QR ToyyibPay</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap");
+
+    :root {
+      --bg: #f5efe5;
+      --panel: rgba(255, 250, 243, 0.84);
+      --panel-strong: rgba(255, 248, 238, 0.96);
+      --ink: #132238;
+      --muted: #5f6d7a;
+      --accent: #ff7a00;
+      --accent-deep: #cf5d00;
+      --line: rgba(19, 34, 56, 0.1);
+      --success-bg: rgba(30, 132, 73, 0.14);
+      --success-ink: #17653a;
+      --warning-bg: rgba(184, 115, 0, 0.16);
+      --warning-ink: #8a5700;
+      --danger-bg: rgba(179, 46, 46, 0.14);
+      --danger-ink: #8d2323;
+      --shadow: 0 24px 60px rgba(46, 30, 12, 0.14);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", "Segoe UI Variable Text", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255, 122, 0, 0.22), transparent 32%),
+        radial-gradient(circle at top right, rgba(20, 88, 171, 0.16), transparent 30%),
+        linear-gradient(180deg, #fff8ef 0%, var(--bg) 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(19, 34, 56, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(19, 34, 56, 0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 90%);
+    }
+
+    .shell {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent-deep);
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 12ch;
+      font-family: "Instrument Serif", Georgia, serif;
+      font-weight: 400;
+      font-size: clamp(2.8rem, 6vw, 5.1rem);
+      line-height: 0.93;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 700px;
+      font-size: 1.02rem;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      gap: 22px;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .form-panel {
+      padding: 28px;
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .panel-copy {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.span-2 {
+      grid-column: span 2;
+    }
+
+    label {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(19, 34, 56, 0.14);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      padding: 14px 16px;
+      font: inherit;
+      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: rgba(255, 122, 0, 0.6);
+      box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.12);
+      transform: translateY(-1px);
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 20px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+    }
+
+    .button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(19, 34, 56, 0.12);
+    }
+
+    .button:disabled {
+      cursor: wait;
+      opacity: 0.72;
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, #ff7a00 0%, #ff9640 100%);
+      color: #fffaf2;
+    }
+
+    .button.secondary {
+      background: rgba(19, 34, 56, 0.08);
+      color: var(--ink);
+    }
+
+    .status-line {
+      font-size: 0.95rem;
+      color: var(--muted);
+      min-height: 1.4em;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .notice {
+      display: block;
+      padding: 14px 16px;
+      border-radius: 18px;
+      line-height: 1.55;
+      border: 1px solid transparent;
+      animation: fade-in 220ms ease;
+    }
+
+    .notice.hidden,
+    .result-panel.hidden {
+      display: none;
+    }
+
+    .notice.info {
+      background: rgba(20, 88, 171, 0.12);
+      color: #0f4f97;
+      border-color: rgba(20, 88, 171, 0.15);
+    }
+
+    .notice.warning {
+      background: var(--warning-bg);
+      color: var(--warning-ink);
+      border-color: rgba(184, 115, 0, 0.2);
+    }
+
+    .notice.success {
+      background: var(--success-bg);
+      color: var(--success-ink);
+      border-color: rgba(30, 132, 73, 0.18);
+    }
+
+    .notice.error {
+      background: var(--danger-bg);
+      color: var(--danger-ink);
+      border-color: rgba(179, 46, 46, 0.2);
+    }
+
+    .result-panel {
+      padding: 24px;
+      position: sticky;
+      top: 24px;
+      background: var(--panel-strong);
+    }
+
+    .result-kicker {
+      margin: 0 0 8px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--accent-deep);
+      font-weight: 700;
+    }
+
+    .result-title {
+      margin: 0 0 18px;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    .qr-shell {
+      width: 100%;
+      aspect-ratio: 1;
+      background:
+        linear-gradient(135deg, rgba(255, 122, 0, 0.08), rgba(20, 88, 171, 0.08)),
+        #fff;
+      border-radius: 22px;
+      border: 1px solid rgba(19, 34, 56, 0.08);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .qr-shell img {
+      width: 100%;
+      max-width: 280px;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 10px 28px rgba(19, 34, 56, 0.08);
+    }
+
+    .metric {
+      margin: 0 0 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(19, 34, 56, 0.05);
+    }
+
+    .metric-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .metric strong {
+      font-size: 1.2rem;
+    }
+
+    .link-box {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(19, 34, 56, 0.08);
+      border-radius: 18px;
+    }
+
+    .link-box a {
+      color: #0f4f97;
+      word-break: break-word;
+      text-decoration-thickness: 1.5px;
+    }
+
+    .micro {
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 880px) {
+      .layout,
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .field.span-2 {
+        grid-column: auto;
+      }
+
+      .result-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .shell {
+        width: min(100% - 20px, 1100px);
+        padding-top: 28px;
+      }
+
+      .form-panel,
+      .result-panel {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">PayPlus x ToyyibPay</p>
+      <h1>Bayaran QR yang terus siap untuk dikongsi.</h1>
+      <p class="lede">
+        Isi jumlah dan tujuan bayaran. Sistem akan cipta bil ToyyibPay, jana QR code, dan sediakan pautan
+        pembayaran yang boleh dibuka terus oleh pengguna.
+      </p>
+      <div id="config-banner" class="notice hidden"></div>
+      <div id="return-banner" class="notice hidden"></div>
+    </section>
 
-<h1>Bayar Dengan QR Code</h1>
-<button onclick="generateQRCode()">Jana QR Code Pembayaran</button>
-<div id="qr-code"></div>
+    <section class="layout">
+      <article class="panel form-panel">
+        <h2 class="panel-title">Jana bil baharu</h2>
+        <p class="panel-copy">
+          Konfigurasi utama dibaca terus daripada server. Jika kategori atau kunci ToyyibPay belum lengkap,
+          paparan ini akan tunjukkan ralat sebenar supaya anda boleh betulkan terus.
+        </p>
 
-<script>
-  function generateQRCode() {
-    // Gantikan dengan URL pembayaran yang anda dapat dari backend
-    const payUrl = "https://toyyibpay.com/abc123";  // Payment URL dari backend
+        <form id="bill-form">
+          <div class="field-grid">
+            <div class="field">
+              <label for="amount">Jumlah bayaran (RM)</label>
+              <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="10.00" required>
+            </div>
 
-    QRCode.toCanvas(document.getElementById("qr-code"), payUrl, function (err) {
-      if (err) console.error(err);
+            <div class="field">
+              <label for="reference">Rujukan dalaman</label>
+              <input id="reference" name="reference" type="text" maxlength="80" placeholder="Sewa April / Yuran / Pesanan #123">
+            </div>
+
+            <div class="field span-2">
+              <label for="description">Deskripsi bayaran</label>
+              <textarea id="description" name="description" maxlength="250" placeholder="Contoh: Bayaran sewa bulanan untuk Unit A-12." required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="bill-to">Nama pembayar</label>
+              <input id="bill-to" name="billTo" type="text" maxlength="60" placeholder="Nama penuh pembayar" required>
+            </div>
+
+            <div class="field">
+              <label for="bill-email">Email pembayar</label>
+              <input id="bill-email" name="billEmail" type="email" maxlength="120" placeholder="[email protected]" required>
+            </div>
+
+            <div class="field span-2">
+              <label for="bill-phone">Telefon pembayar</label>
+              <input id="bill-phone" name="billPhone" type="tel" maxlength="20" placeholder="0123456789" required>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="submit-btn" class="button primary" type="submit">Jana QR code</button>
+            <button id="reset-btn" class="button secondary" type="button">Kosongkan hasil</button>
+          </div>
+
+          <div class="stack">
+            <div id="form-message" class="notice hidden"></div>
+            <p id="status-line" class="status-line"></p>
+          </div>
+        </form>
+      </article>
+
+      <aside id="result-panel" class="panel result-panel hidden">
+        <p class="result-kicker">Hasil Bil</p>
+        <h2 class="result-title">QR pembayaran sedia digunakan</h2>
+
+        <div class="qr-shell">
+          <img id="qr-image" alt="QR code pembayaran">
+        </div>
+
+        <div class="metric">
+          <span class="metric-label">Jumlah</span>
+          <strong id="amount-display">RM 0.00</strong>
+        </div>
+
+        <div class="metric">
+          <span class="metric-label">Bill Code</span>
+          <strong id="bill-code">-</strong>
+        </div>
+
+        <div class="link-box">
+          <span class="metric-label">Pautan pembayaran</span>
+          <a id="payment-link" href="#" target="_blank" rel="noreferrer">-</a>
+          <button id="copy-link-btn" class="button secondary" type="button">Salin pautan</button>
+        </div>
+
+        <p class="micro">
+          Callback ToyyibPay tidak akan sampai ke <code>localhost</code>. Untuk ujian callback sebenar,
+          tetapkan <code>APP_BASE_URL</code> kepada URL awam seperti tunnel atau domain server anda.
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const elements = {
+      form: document.getElementById("bill-form"),
+      amount: document.getElementById("amount"),
+      reference: document.getElementById("reference"),
+      description: document.getElementById("description"),
+      billTo: document.getElementById("bill-to"),
+      billEmail: document.getElementById("bill-email"),
+      billPhone: document.getElementById("bill-phone"),
+      submit: document.getElementById("submit-btn"),
+      reset: document.getElementById("reset-btn"),
+      statusLine: document.getElementById("status-line"),
+      formMessage: document.getElementById("form-message"),
+      configBanner: document.getElementById("config-banner"),
+      returnBanner: document.getElementById("return-banner"),
+      resultPanel: document.getElementById("result-panel"),
+      qrImage: document.getElementById("qr-image"),
+      amountDisplay: document.getElementById("amount-display"),
+      billCode: document.getElementById("bill-code"),
+      paymentLink: document.getElementById("payment-link"),
+      copyLink: document.getElementById("copy-link-btn")
+    };
+
+    const tones = ["info", "warning", "success", "error"];
+
+    function setNotice(element, message, tone) {
+      element.textContent = message;
+      element.classList.remove("hidden", ...tones);
+      element.classList.add(tone);
+    }
+
+    function clearNotice(element) {
+      element.textContent = "";
+      element.classList.add("hidden");
+      element.classList.remove(...tones);
+    }
+
+    function formatCurrency(value) {
+      return new Intl.NumberFormat("ms-MY", {
+        style: "currency",
+        currency: "MYR",
+        minimumFractionDigits: 2
+      }).format(Number(value || 0));
+    }
+
+    function resetResult() {
+      elements.resultPanel.classList.add("hidden");
+      elements.qrImage.removeAttribute("src");
+      elements.amountDisplay.textContent = formatCurrency(0);
+      elements.billCode.textContent = "-";
+      elements.paymentLink.textContent = "-";
+      elements.paymentLink.href = "#";
+      elements.paymentLink.dataset.ready = "false";
+    }
+
+    function renderBill(payload) {
+      elements.amountDisplay.textContent = formatCurrency(payload.amount);
+      elements.billCode.textContent = payload.billCode;
+      elements.paymentLink.textContent = payload.paymentUrl;
+      elements.paymentLink.href = payload.paymentUrl;
+      elements.paymentLink.dataset.ready = "true";
+      elements.qrImage.src = payload.qrCodeUrl;
+      elements.resultPanel.classList.remove("hidden");
+    }
+
+    function renderReturnStatus() {
+      const params = new URLSearchParams(window.location.search);
+      const statusId = params.get("status_id");
+
+      if (!statusId) {
+        return;
+      }
+
+      const billCode = params.get("billcode") || "tiada";
+      const orderId = params.get("order_id");
+      const isSuccess = statusId === "1";
+      const isPending = statusId === "2";
+
+      let tone = "error";
+      let message = `Pembayaran untuk bill ${billCode} gagal atau dibatalkan.`;
+
+      if (isSuccess) {
+        tone = "success";
+        message = `Pembayaran untuk bill ${billCode} berjaya diterima.`;
+      } else if (isPending) {
+        tone = "warning";
+        message = `Pembayaran untuk bill ${billCode} masih dalam status pending.`;
+      }
+
+      if (orderId) {
+        message += ` Rujukan: ${orderId}.`;
+      }
+
+      setNotice(elements.returnBanner, message, tone);
+      history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    async function loadHealth() {
+      try {
+        const response = await fetch("/health");
+        const payload = await response.json();
+
+        if (!payload.configured) {
+          const missing = payload.missing.join(", ");
+          setNotice(
+            elements.configBanner,
+            `Konfigurasi belum lengkap. Tetapkan: ${missing}.`,
+            "warning"
+          );
+          return;
+        }
+
+        setNotice(
+          elements.configBanner,
+          `Server aktif. Bill akan dihantar ke ${payload.toyyibpayBaseUrl}.`,
+          "info"
+        );
+      } catch (error) {
+        setNotice(
+          elements.configBanner,
+          "Tidak dapat membaca status server. Pastikan backend sedang berjalan.",
+          "error"
+        );
+      }
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+      clearNotice(elements.formMessage);
+      elements.statusLine.textContent = "Sedang mencipta bil...";
+      elements.submit.disabled = true;
+
+      const payload = {
+        amount: elements.amount.value,
+        description: elements.description.value.trim(),
+        reference: elements.reference.value.trim(),
+        billTo: elements.billTo.value.trim(),
+        billEmail: elements.billEmail.value.trim(),
+        billPhone: elements.billPhone.value.trim()
+      };
+
+      try {
+        const response = await fetch("/api/create-bill", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Gagal mencipta bil.");
+        }
+
+        renderBill(result);
+        setNotice(elements.formMessage, "Bil berjaya dijana.", "success");
+      } catch (error) {
+        resetResult();
+        setNotice(elements.formMessage, error.message, "error");
+      } finally {
+        elements.statusLine.textContent = "";
+        elements.submit.disabled = false;
+      }
+    }
+
+    async function copyPaymentLink() {
+      const link = elements.paymentLink.href;
+
+      if (elements.paymentLink.dataset.ready !== "true") {
+        setNotice(elements.formMessage, "Tiada pautan untuk disalin lagi.", "warning");
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(link);
+        setNotice(elements.formMessage, "Pautan pembayaran telah disalin.", "info");
+      } catch (error) {
+        setNotice(elements.formMessage, "Gagal menyalin pautan pembayaran.", "error");
+      }
+    }
+
+    elements.form.addEventListener("submit", handleSubmit);
+    elements.reset.addEventListener("click", () => {
+      elements.form.reset();
+      clearNotice(elements.formMessage);
+      resetResult();
+      elements.statusLine.textContent = "";
     });
-  }
-</script>
+    elements.copyLink.addEventListener("click", copyPaymentLink);
 
+    resetResult();
+    renderReturnStatus();
+    loadHealth();
+  </script>
 </body>
 </html>

@@ -1,0 +1,11 @@
+{
+  "name": "payplus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ToyyibPay bill and QR generator for PayPlus",
+  "main": "Node.js",
+  "scripts": {
+    "start": "node Node.js",
+    "dev": "node --watch Node.js"
+  }
+}
