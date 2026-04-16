@@ -3,353 +3,215 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PayPlus | QR ToyyibPay</title>
+  <title>PayPlus | Stripe</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
-    @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap");
-
-    :root {
-      --bg: #f5efe5;
-      --panel: rgba(255, 250, 243, 0.84);
-      --panel-strong: rgba(255, 248, 238, 0.96);
-      --ink: #132238;
-      --muted: #5f6d7a;
-      --accent: #ff7a00;
-      --accent-deep: #cf5d00;
-      --line: rgba(19, 34, 56, 0.1);
-      --info-bg: rgba(20, 88, 171, 0.12);
-      --info-ink: #0f4f97;
-      --success-bg: rgba(30, 132, 73, 0.14);
-      --success-ink: #17653a;
-      --warning-bg: rgba(184, 115, 0, 0.16);
-      --warning-ink: #8a5700;
-      --danger-bg: rgba(179, 46, 46, 0.14);
-      --danger-ink: #8d2323;
-      --shadow: 0 24px 60px rgba(46, 30, 12, 0.14);
-      --radius: 24px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: "Space Grotesk", "Segoe UI Variable Text", sans-serif;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at top left, rgba(255, 122, 0, 0.22), transparent 32%),
-        radial-gradient(circle at top right, rgba(20, 88, 171, 0.16), transparent 30%),
-        linear-gradient(180deg, #fff8ef 0%, var(--bg) 100%);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(19, 34, 56, 0.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(19, 34, 56, 0.035) 1px, transparent 1px);
-      background-size: 28px 28px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.45), transparent 90%);
+      font-family: "Segoe UI", sans-serif;
+      color: #17324a;
+      background: linear-gradient(180deg, #fff9f2 0%, #f2ece5 100%);
     }
 
     .shell {
-      width: min(1040px, calc(100% - 32px));
+      width: min(1080px, calc(100% - 24px));
       margin: 0 auto;
-      padding: 48px 0 64px;
+      padding: 32px 0 48px;
+    }
+
+    h1, h2, p {
+      margin-top: 0;
     }
 
     .hero {
-      display: grid;
-      gap: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
     }
 
     .eyebrow {
-      margin: 0;
-      font-size: 0.85rem;
-      letter-spacing: 0.16em;
       text-transform: uppercase;
-      color: var(--accent-deep);
+      letter-spacing: 0.14em;
+      color: #0c6f86;
+      font-size: 0.82rem;
       font-weight: 700;
     }
 
-    h1 {
-      margin: 0;
-      max-width: 12ch;
-      font-family: "Instrument Serif", Georgia, serif;
-      font-weight: 400;
-      font-size: clamp(2.8rem, 6vw, 5rem);
-      line-height: 0.93;
-    }
-
     .lede {
-      margin: 0;
-      max-width: 720px;
-      font-size: 1.02rem;
-      line-height: 1.7;
-      color: var(--muted);
+      max-width: 780px;
+      line-height: 1.6;
+      color: #56697b;
     }
 
     .layout {
       display: grid;
-      gap: 22px;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.86fr);
-      align-items: start;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-
-    .form-panel,
-    .result-panel {
-      padding: 28px;
-    }
-
-    .result-panel {
-      background: var(--panel-strong);
-      position: sticky;
-      top: 24px;
-    }
-
-    .panel-title {
-      margin: 0 0 8px;
-      font-size: 1.35rem;
-      font-weight: 700;
-    }
-
-    .panel-copy,
-    .micro {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.6;
+      gap: 20px;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.88fr);
     }
 
     .stack {
       display: grid;
-      gap: 16px;
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(255, 252, 248, 0.92);
+      border: 1px solid rgba(23, 50, 74, 0.1);
+      border-radius: 20px;
+      box-shadow: 0 18px 44px rgba(40, 24, 8, 0.1);
+      padding: 22px;
     }
 
     .field {
       display: grid;
       gap: 8px;
-      margin: 24px 0 18px;
+      margin: 20px 0 16px;
     }
 
     label {
-      font-size: 0.95rem;
       font-weight: 700;
     }
 
     input {
-      width: 100%;
-      border: 1px solid rgba(19, 34, 56, 0.14);
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.76);
-      color: var(--ink);
-      padding: 14px 16px;
+      border: 1px solid rgba(23, 50, 74, 0.14);
+      border-radius: 14px;
+      padding: 12px 14px;
       font: inherit;
-      transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: rgba(255, 122, 0, 0.6);
-      box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.12);
-      transform: translateY(-1px);
+      background: #fff;
     }
 
     .actions {
       display: flex;
-      gap: 12px;
-      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
-    .button {
+    button {
       border: 0;
       border-radius: 999px;
-      padding: 14px 20px;
+      padding: 12px 16px;
       font: inherit;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
     }
 
-    .button:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(19, 34, 56, 0.12);
+    button.primary {
+      background: #0c7b93;
+      color: #fff;
     }
 
-    .button:disabled {
-      cursor: wait;
-      opacity: 0.72;
-    }
-
-    .button.primary {
-      background: linear-gradient(135deg, #ff7a00 0%, #ff9640 100%);
-      color: #fffaf2;
-    }
-
-    .button.secondary {
-      background: rgba(19, 34, 56, 0.08);
-      color: var(--ink);
+    button.secondary {
+      background: rgba(23, 50, 74, 0.08);
+      color: #17324a;
     }
 
     .notice {
-      display: block;
-      padding: 14px 16px;
-      border-radius: 18px;
-      line-height: 1.55;
-      border: 1px solid transparent;
-      animation: fade-in 220ms ease;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin: 0 0 12px;
+      line-height: 1.5;
     }
 
-    .notice.hidden,
-    .result-panel.hidden {
+    .hidden {
       display: none;
     }
 
-    .notice.info {
-      background: var(--info-bg);
-      color: var(--info-ink);
-      border-color: rgba(20, 88, 171, 0.15);
+    .info {
+      background: rgba(12, 123, 147, 0.12);
+      color: #075969;
     }
 
-    .notice.warning {
-      background: var(--warning-bg);
-      color: var(--warning-ink);
-      border-color: rgba(184, 115, 0, 0.2);
+    .warning {
+      background: rgba(184, 115, 0, 0.14);
+      color: #855400;
     }
 
-    .notice.success {
-      background: var(--success-bg);
-      color: var(--success-ink);
-      border-color: rgba(30, 132, 73, 0.18);
+    .success {
+      background: rgba(30, 132, 73, 0.14);
+      color: #17653a;
     }
 
-    .notice.error {
-      background: var(--danger-bg);
-      color: var(--danger-ink);
-      border-color: rgba(179, 46, 46, 0.2);
+    .error {
+      background: rgba(179, 46, 46, 0.14);
+      color: #8d2323;
     }
 
-    .status-line {
-      min-height: 1.4em;
-      font-size: 0.95rem;
-      color: var(--muted);
+    .status-line,
+    .muted {
+      color: #5f6d7a;
+      line-height: 1.6;
     }
 
-    .result-kicker {
-      margin: 0 0 8px;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--accent-deep);
-      font-weight: 700;
-    }
-
-    .result-title {
-      margin: 0 0 18px;
-      font-size: 1.4rem;
-      font-weight: 700;
+    .result {
+      position: sticky;
+      top: 20px;
     }
 
     .qr-shell {
-      width: 100%;
-      aspect-ratio: 1;
-      background:
-        linear-gradient(135deg, rgba(255, 122, 0, 0.08), rgba(20, 88, 171, 0.08)),
-        #fff;
-      border-radius: 22px;
-      border: 1px solid rgba(19, 34, 56, 0.08);
       display: grid;
       place-items: center;
-      padding: 18px;
-      margin-bottom: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid rgba(23, 50, 74, 0.08);
+      margin-bottom: 16px;
     }
 
     #qr-canvas {
       width: 100%;
       max-width: 280px;
       height: auto;
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 10px 28px rgba(19, 34, 56, 0.08);
     }
 
-    .metric {
-      margin: 0 0 14px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(19, 34, 56, 0.05);
+    .metric,
+    .route {
+      background: rgba(23, 50, 74, 0.05);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
     }
 
-    .metric-label {
+    .metric span {
       display: block;
-      margin-bottom: 6px;
       font-size: 0.85rem;
-      color: var(--muted);
+      color: #5f6d7a;
+      margin-bottom: 4px;
     }
 
-    .metric strong {
-      font-size: 1.2rem;
-    }
-
-    .link-box {
+    .status-grid {
       display: grid;
       gap: 12px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.74);
-      border: 1px solid rgba(19, 34, 56, 0.08);
-      border-radius: 18px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 16px;
     }
 
-    .link-box a {
-      color: #0f4f97;
+    .status-box {
+      background: rgba(23, 50, 74, 0.05);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .status-box strong {
+      display: block;
+      margin-top: 4px;
+    }
+
+    .route {
+      font-family: Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    a {
+      color: #0d5e92;
       word-break: break-word;
-      text-decoration-thickness: 1.5px;
-    }
-
-    @keyframes fade-in {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
     }
 
     @media (max-width: 880px) {
-      .layout {
+      .layout,
+      .status-grid {
         grid-template-columns: 1fr;
       }
 
-      .result-panel {
+      .result {
         position: static;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .shell {
-        width: min(100% - 20px, 1040px);
-        padding-top: 28px;
-      }
-
-      .form-panel,
-      .result-panel {
-        padding: 20px;
       }
     }
   </style>
@@ -357,122 +219,116 @@
 <body>
   <main class="shell">
     <section class="hero">
-      <p class="eyebrow">PayPlus x ToyyibPay</p>
-      <h1>Jana bil untuk NFC tag dan QR terus dari browser.</h1>
+      <p class="eyebrow">PayPlus x Stripe</p>
+      <h1>Satu backend untuk web checkout, QR, dan Tap to Pay Android.</h1>
       <p class="lede">
-        Versi ini tak pakai backend. Anda cuma masukkan jumlah, sistem akan terus cipta bil ToyyibPay
-        dan jana QR code pada halaman yang sama.
+        Halaman ini akan create Stripe Hosted Checkout dari backend anda. QR dijana daripada URL Checkout itu.
+        Backend yang sama juga sediakan endpoint untuk Stripe Terminal Android.
       </p>
-      <div id="security-note" class="notice warning">
-        Mod frontend-only ini dedahkan <code>user secret key</code> dalam source code. Kalau nak lebih selamat,
-        backend tetap diperlukan.
-      </div>
-      <div class="notice info">
-        Bil kini dijana dengan saluran <strong>FPX + kad</strong>. NFC/payWave sebenar tak boleh diakses terus oleh laman web biasa,
-        jadi telefon masih akan bayar melalui halaman hos ToyyibPay selepas pautan dibuka.
-      </div>
-      <div id="nfc-support-note" class="notice info">
-        NFC tag hanya boleh ditulis pada pelayar yang menyokong <strong>Web NFC</strong> dalam secure context seperti
-        <code>https://</code> atau <code>localhost</code>. Ini bukan terminal payWave sebenar.
-      </div>
+      <div id="config-banner" class="notice hidden"></div>
       <div id="return-banner" class="notice hidden"></div>
     </section>
 
     <section class="layout">
-      <article class="panel form-panel">
-        <div class="stack">
-          <div>
-            <h2 class="panel-title">Jana bil baharu</h2>
-            <p class="panel-copy">
-              Field lain telah dibuang. Nama, email, telefon, rujukan dalaman dan deskripsi kini tidak perlu
-              diisi oleh pengguna. Halaman bil ToyyibPay akan buka dengan pilihan pembayaran bank dan kad.
-            </p>
-          </div>
+      <div class="stack">
+        <article class="card">
+          <h2>Stripe Hosted Checkout + QR</h2>
+          <p class="muted">
+            Flow paling cepat siap. Masukkan jumlah, backend create Checkout Session, kemudian anda boleh buka URL Stripe
+            atau scan QR yang terhasil.
+          </p>
 
-          <form id="bill-form">
+          <form id="checkout-form">
             <div class="field">
               <label for="amount">Jumlah bayaran (RM)</label>
               <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="10.00" required>
             </div>
 
             <div class="actions">
-              <button id="submit-btn" class="button primary" type="submit">Jana QR code</button>
-              <button id="reset-btn" class="button secondary" type="button">Kosongkan hasil</button>
+              <button id="submit-btn" class="primary" type="submit">Jana Checkout</button>
+              <button id="reset-btn" class="secondary" type="button">Kosongkan hasil</button>
             </div>
 
-            <div class="stack" style="margin-top: 18px;">
+            <div style="margin-top:16px;">
               <div id="form-message" class="notice hidden"></div>
               <p id="status-line" class="status-line"></p>
             </div>
           </form>
-        </div>
-      </article>
+        </article>
 
-      <aside id="result-panel" class="panel result-panel hidden">
-        <p class="result-kicker">Hasil Bil</p>
-        <h2 class="result-title">QR dan NFC sedia digunakan</h2>
+        <article class="card">
+          <h2>Tap to Pay Android Backend</h2>
+          <p class="muted">
+            Browser ini bukan terminal payWave. Bahagian ini hanya tunjuk bahawa backend tempatan sudah ada route
+            untuk digunakan oleh Stripe Terminal Android SDK.
+          </p>
 
+          <div class="status-grid">
+            <div class="status-box">Mode<strong id="mode-status">-</strong></div>
+            <div class="status-box">Location<strong id="location-status">-</strong></div>
+            <div class="status-box">Capture<strong id="capture-status">-</strong></div>
+            <div class="status-box">Webhook<strong id="webhook-status">-</strong></div>
+          </div>
+
+          <div style="margin-top:16px;">
+            <div class="route">POST /api/terminal/connection-token</div>
+            <div class="route">POST /api/terminal/payment-intents</div>
+            <div class="route">POST /api/terminal/payment-intents/:id/capture</div>
+            <div class="route">POST /api/terminal/payment-intents/:id/cancel</div>
+          </div>
+        </article>
+      </div>
+
+      <aside id="result-panel" class="card result hidden">
+        <h2>Hasil Checkout</h2>
         <div class="qr-shell">
           <canvas id="qr-canvas"></canvas>
         </div>
 
         <div class="metric">
-          <span class="metric-label">Jumlah</span>
+          <span>Jumlah</span>
           <strong id="amount-display">RM 0.00</strong>
         </div>
 
         <div class="metric">
-          <span class="metric-label">Bill Code</span>
-          <strong id="bill-code">-</strong>
+          <span>Checkout Session</span>
+          <strong id="session-id">-</strong>
         </div>
 
-        <div class="link-box">
-          <span class="metric-label">Pautan pembayaran</span>
-          <a id="payment-link" href="#" target="_blank" rel="noreferrer">-</a>
-          <div class="actions">
-            <button id="open-link-btn" class="button secondary" type="button">Buka pautan</button>
-            <button id="copy-link-btn" class="button secondary" type="button">Salin pautan</button>
-            <button id="write-nfc-btn" class="button secondary" type="button">Tulis tag NFC</button>
-          </div>
-          <div id="nfc-message" class="notice hidden"></div>
+        <div class="metric">
+          <span>Pautan Checkout</span>
+          <a id="checkout-link" href="#" target="_blank" rel="noreferrer">-</a>
         </div>
 
-        <p class="micro" style="margin-top: 16px;">
-          Return URL akan digunakan automatik hanya jika halaman ini dibuka melalui <code>http</code> atau <code>https</code>.
-          Untuk NFC, dekatkan tag selepas butang <code>Tulis tag NFC</code> ditekan.
-        </p>
+        <div class="actions">
+          <button id="open-link-btn" class="secondary" type="button">Buka Checkout</button>
+          <button id="copy-link-btn" class="secondary" type="button">Salin pautan</button>
+        </div>
       </aside>
     </section>
   </main>
 
   <script>
-    const CONFIG = Object.freeze({
-      toyyibpayBaseUrl: "https://toyyibpay.com",
-      createBillUrl: "https://toyyibpay.com/index.php/api/createBill",
-      userSecretKey: "iu4sht0f-mzlb-5ddg-iijw-265j9wfonsfo",
-      categoryCode: "9a3a2le5",
-      billName: "PayPlus Payment",
-      billDescription: "Bayaran melalui PayPlus",
-      billPaymentChannel: "2"
-    });
-
     const elements = {
-      form: document.getElementById("bill-form"),
+      form: document.getElementById("checkout-form"),
       amount: document.getElementById("amount"),
       submit: document.getElementById("submit-btn"),
       reset: document.getElementById("reset-btn"),
       formMessage: document.getElementById("form-message"),
       statusLine: document.getElementById("status-line"),
+      configBanner: document.getElementById("config-banner"),
       returnBanner: document.getElementById("return-banner"),
       resultPanel: document.getElementById("result-panel"),
       qrCanvas: document.getElementById("qr-canvas"),
       amountDisplay: document.getElementById("amount-display"),
-      billCode: document.getElementById("bill-code"),
-      paymentLink: document.getElementById("payment-link"),
+      sessionId: document.getElementById("session-id"),
+      checkoutLink: document.getElementById("checkout-link"),
       openLink: document.getElementById("open-link-btn"),
       copyLink: document.getElementById("copy-link-btn"),
-      writeNfc: document.getElementById("write-nfc-btn"),
-      nfcMessage: document.getElementById("nfc-message")
+      modeStatus: document.getElementById("mode-status"),
+      locationStatus: document.getElementById("location-status"),
+      captureStatus: document.getElementById("capture-status"),
+      webhookStatus: document.getElementById("webhook-status")
     };
 
     const tones = ["info", "warning", "success", "error"];
@@ -502,162 +358,120 @@
       context.clearRect(0, 0, elements.qrCanvas.width, elements.qrCanvas.height);
       elements.resultPanel.classList.add("hidden");
       elements.amountDisplay.textContent = formatCurrency(0);
-      elements.billCode.textContent = "-";
-      elements.paymentLink.textContent = "-";
-      elements.paymentLink.href = "#";
-      elements.paymentLink.dataset.ready = "false";
-      elements.writeNfc.disabled = true;
-      clearNotice(elements.nfcMessage);
+      elements.sessionId.textContent = "-";
+      elements.checkoutLink.textContent = "-";
+      elements.checkoutLink.href = "#";
+      elements.checkoutLink.dataset.ready = "false";
     }
 
-    function canUseWebNfc() {
-      return window.isSecureContext && "NDEFReader" in window;
+    function hasCheckoutLink() {
+      return elements.checkoutLink.dataset.ready === "true";
     }
 
-    function updateNfcAvailability() {
-      if (canUseWebNfc()) {
-        setNotice(
-          elements.nfcMessage,
-          "Peranti ini nampak menyokong Web NFC. Anda boleh tulis pautan bil ke tag NFC.",
-          "info"
-        );
-        return;
-      }
+    async function loadHealth() {
+      try {
+        const response = await fetch("/health");
+        const payload = await response.json();
+        const missing = payload.missing.join(", ");
 
-      setNotice(
-        elements.nfcMessage,
-        "Web NFC tidak tersedia pada peranti atau konteks ini. QR dan pautan masih boleh digunakan.",
-        "warning"
-      );
-    }
+        if (payload.ready.checkout) {
+          setNotice(
+            elements.configBanner,
+            `Backend Stripe aktif dalam mode <strong>${payload.mode}</strong>.`,
+            payload.ready.webhook ? "success" : "warning"
+          );
+        } else {
+          setNotice(elements.configBanner, `Backend belum lengkap. Tetapkan: <strong>${missing}</strong>.`, "warning");
+        }
 
-    function hasReadyPaymentLink() {
-      return elements.paymentLink.dataset.ready === "true";
-    }
-
-    function getReturnUrl() {
-      if (window.location.protocol === "http:" || window.location.protocol === "https:") {
-        return window.location.href.split("?")[0];
-      }
-
-      return "";
-    }
-
-    function getStatusLabel(statusId) {
-      switch (statusId) {
-        case "1":
-          return { tone: "success", text: "berjaya diterima" };
-        case "2":
-          return { tone: "warning", text: "masih dalam status pending" };
-        default:
-          return { tone: "error", text: "gagal atau dibatalkan" };
+        elements.modeStatus.textContent = payload.mode;
+        elements.locationStatus.textContent = payload.terminal.locationId || "Belum diisi";
+        elements.captureStatus.textContent = payload.terminal.captureMethod;
+        elements.webhookStatus.textContent = payload.ready.webhook ? "Aktif" : "Belum diisi";
+      } catch (error) {
+        setNotice(elements.configBanner, "Tak dapat sambung ke backend Stripe.", "error");
+        elements.modeStatus.textContent = "Offline";
+        elements.locationStatus.textContent = "Offline";
+        elements.captureStatus.textContent = "Offline";
+        elements.webhookStatus.textContent = "Offline";
       }
     }
 
-    function renderReturnStatus() {
+    async function createCheckoutSession(amount) {
+      const response = await fetch("/api/checkout/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount })
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Gagal create Checkout Session.");
+      }
+
+      return payload;
+    }
+
+    async function fetchSessionStatus(sessionId) {
+      const response = await fetch(`/api/checkout/session/${encodeURIComponent(sessionId)}`);
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || "Gagal dapatkan status session.");
+      }
+
+      return payload;
+    }
+
+    async function renderReturnStatus() {
       const params = new URLSearchParams(window.location.search);
-      const statusId = params.get("status_id");
+      const status = params.get("status");
+      const sessionId = params.get("session_id");
 
-      if (!statusId) {
+      if (!status) {
         return;
       }
 
-      const billCode = params.get("billcode") || "tiada";
-      const orderId = params.get("order_id");
-      const state = getStatusLabel(statusId);
-      let message = `Pembayaran untuk bill <strong>${billCode}</strong> ${state.text}.`;
-
-      if (orderId) {
-        message += ` Rujukan gateway: <strong>${orderId}</strong>.`;
+      if (status === "success" && sessionId) {
+        try {
+          const session = await fetchSessionStatus(sessionId);
+          const amount = (session.amountTotal || 0) / 100;
+          setNotice(
+            elements.returnBanner,
+            `Pembayaran Stripe berjaya untuk session <strong>${session.id}</strong>. Jumlah: <strong>${formatCurrency(amount)}</strong>. Status: <strong>${session.paymentStatus}</strong>.`,
+            "success"
+          );
+        } catch (error) {
+          setNotice(elements.returnBanner, `Bayaran berjaya, tapi status session tak dapat dibaca: ${error.message}`, "warning");
+        }
+      } else if (status === "cancelled") {
+        setNotice(elements.returnBanner, "Checkout dibatalkan sebelum pembayaran selesai.", "warning");
       }
 
-      setNotice(elements.returnBanner, message, state.tone);
       history.replaceState({}, document.title, window.location.pathname);
     }
 
-    async function createBill(amount) {
-      const cents = Math.round(amount * 100);
-      const params = new URLSearchParams({
-        userSecretKey: CONFIG.userSecretKey,
-        categoryCode: CONFIG.categoryCode,
-        billName: CONFIG.billName,
-        billDescription: CONFIG.billDescription,
-        billPriceSetting: "1",
-        billPayorInfo: "0",
-        billAmount: String(cents),
-        billPaymentChannel: CONFIG.billPaymentChannel
-      });
-
-      const returnUrl = getReturnUrl();
-
-      if (returnUrl) {
-        params.append("billReturnUrl", returnUrl);
-      }
-
-      const response = await fetch(CONFIG.createBillUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: params.toString()
-      });
-
-      const raw = await response.text();
-      let parsed;
-
-      try {
-        parsed = JSON.parse(raw);
-      } catch (error) {
-        throw new Error("Respons ToyyibPay tak sah.");
-      }
-
-      const first = Array.isArray(parsed) ? parsed[0] : parsed;
-
-      if (!response.ok) {
-        throw new Error(first && first.msg ? first.msg : "Gagal cipta bil.");
-      }
-
-      if (first && first.status === "error") {
-        throw new Error(first.msg || "ToyyibPay pulangkan ralat.");
-      }
-
-      const billCode = first && (first.BillCode || first.billCode);
-
-      if (!billCode) {
-        throw new Error("BillCode tak dijumpai dalam respons ToyyibPay.");
-      }
-
-      return {
-        billCode,
-        paymentUrl: `${CONFIG.toyyibpayBaseUrl}/${billCode}`
-      };
-    }
-
-    async function renderBill(amount, payload) {
+    async function renderCheckout(amount, payload) {
       elements.amountDisplay.textContent = formatCurrency(amount);
-      elements.billCode.textContent = payload.billCode;
-      elements.paymentLink.textContent = payload.paymentUrl;
-      elements.paymentLink.href = payload.paymentUrl;
-      elements.paymentLink.dataset.ready = "true";
-      elements.writeNfc.disabled = !canUseWebNfc();
+      elements.sessionId.textContent = payload.id;
+      elements.checkoutLink.textContent = payload.url;
+      elements.checkoutLink.href = payload.url;
+      elements.checkoutLink.dataset.ready = "true";
 
-      await QRCode.toCanvas(elements.qrCanvas, payload.paymentUrl, {
+      await QRCode.toCanvas(elements.qrCanvas, payload.url, {
         width: 320,
         margin: 1,
-        color: {
-          dark: "#132238",
-          light: "#ffffff"
-        }
+        color: { dark: "#17324a", light: "#ffffff" }
       });
 
       elements.resultPanel.classList.remove("hidden");
-      updateNfcAvailability();
     }
 
     async function handleSubmit(event) {
       event.preventDefault();
       clearNotice(elements.formMessage);
-      elements.statusLine.textContent = "Sedang mencipta bil...";
+      elements.statusLine.textContent = "Sedang create Stripe Checkout Session...";
       elements.submit.disabled = true;
 
       const amount = Number.parseFloat(elements.amount.value);
@@ -670,9 +484,9 @@
       }
 
       try {
-        const bill = await createBill(amount);
-        await renderBill(amount, bill);
-        setNotice(elements.formMessage, "Bil berjaya dijana.", "success");
+        const session = await createCheckoutSession(amount);
+        await renderCheckout(amount, session);
+        setNotice(elements.formMessage, "Stripe Checkout berjaya dijana.", "success");
       } catch (error) {
         resetResult();
         setNotice(elements.formMessage, error.message, "error");
@@ -682,93 +496,27 @@
       }
     }
 
-    async function copyPaymentLink() {
-      if (!hasReadyPaymentLink()) {
-        setNotice(elements.formMessage, "Tiada pautan untuk disalin lagi.", "warning");
+    function openCheckout() {
+      if (!hasCheckoutLink()) {
+        setNotice(elements.formMessage, "Tiada pautan Checkout lagi.", "warning");
+        return;
+      }
+
+      window.open(elements.checkoutLink.href, "_blank", "noopener,noreferrer");
+    }
+
+    async function copyCheckout() {
+      if (!hasCheckoutLink()) {
+        setNotice(elements.formMessage, "Tiada pautan Checkout lagi.", "warning");
         return;
       }
 
       try {
-        await navigator.clipboard.writeText(elements.paymentLink.href);
-        setNotice(elements.formMessage, "Pautan pembayaran telah disalin.", "info");
+        await navigator.clipboard.writeText(elements.checkoutLink.href);
+        setNotice(elements.formMessage, "Pautan Checkout telah disalin.", "info");
       } catch (error) {
-        setNotice(elements.formMessage, "Gagal menyalin pautan pembayaran.", "error");
+        setNotice(elements.formMessage, "Gagal menyalin pautan Checkout.", "error");
       }
-    }
-
-    function openPaymentLink() {
-      if (!hasReadyPaymentLink()) {
-        setNotice(elements.formMessage, "Tiada pautan untuk dibuka lagi.", "warning");
-        return;
-      }
-
-      window.open(elements.paymentLink.href, "_blank", "noopener,noreferrer");
-    }
-
-    async function writeNfcTag() {
-      if (!hasReadyPaymentLink()) {
-        setNotice(elements.formMessage, "Jana bil dahulu sebelum tulis tag NFC.", "warning");
-        return;
-      }
-
-      if (!canUseWebNfc()) {
-        setNotice(
-          elements.nfcMessage,
-          "Web NFC tak tersedia. Gunakan Android Chrome dalam <code>https://</code> atau <code>localhost</code>.",
-          "error"
-        );
-        return;
-      }
-
-      elements.writeNfc.disabled = true;
-      setNotice(elements.nfcMessage, "Dekatkan tag NFC pada telefon untuk proses menulis...", "info");
-
-      try {
-        const writer = new NDEFReader();
-        await writer.write({
-          records: [
-            {
-              recordType: "url",
-              data: elements.paymentLink.href
-            },
-            {
-              recordType: "text",
-              data: `PayPlus ${elements.billCode.textContent}`
-            }
-          ]
-        });
-
-        setNotice(
-          elements.nfcMessage,
-          `Tag NFC berjaya ditulis dengan pautan bil <strong>${elements.billCode.textContent}</strong>.`,
-          "success"
-        );
-      } catch (error) {
-        const message = getNfcErrorMessage(error);
-        setNotice(elements.nfcMessage, message, "error");
-      } finally {
-        elements.writeNfc.disabled = !canUseWebNfc();
-      }
-    }
-
-    function getNfcErrorMessage(error) {
-      if (error && error.name === "NotAllowedError") {
-        return "Akses NFC ditolak atau dibatalkan.";
-      }
-
-      if (error && error.name === "NotSupportedError") {
-        return "Peranti atau pelayar ini tidak menyokong penulisan NFC.";
-      }
-
-      if (error && error.name === "InvalidStateError") {
-        return "NFC belum aktif pada telefon. Aktifkan NFC dan cuba lagi.";
-      }
-
-      if (error && error.name === "NetworkError") {
-        return "Tag NFC gagal ditulis. Cuba dekatkan semula tag pada telefon.";
-      }
-
-      return "Tag NFC gagal ditulis.";
     }
 
     elements.form.addEventListener("submit", handleSubmit);
@@ -778,13 +526,12 @@
       resetResult();
       elements.statusLine.textContent = "";
     });
-    elements.openLink.addEventListener("click", openPaymentLink);
-    elements.copyLink.addEventListener("click", copyPaymentLink);
-    elements.writeNfc.addEventListener("click", writeNfcTag);
+    elements.openLink.addEventListener("click", openCheckout);
+    elements.copyLink.addEventListener("click", copyCheckout);
 
     resetResult();
+    loadHealth();
     renderReturnStatus();
-    updateNfcAvailability();
   </script>
 </body>
 </html>
