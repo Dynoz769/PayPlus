@@ -309,6 +309,8 @@
   </main>
 
   <script>
+    const DEFAULT_BACKEND_ORIGIN = "http://localhost:3000";
+
     const elements = {
       form: document.getElementById("checkout-form"),
       amount: document.getElementById("amount"),
@@ -332,6 +334,7 @@
     };
 
     const tones = ["info", "warning", "success", "error"];
+    const BACKEND_BASE_URL = resolveBackendBaseUrl();
 
     function setNotice(element, message, tone) {
       element.innerHTML = message;
@@ -368,20 +371,42 @@
       return elements.checkoutLink.dataset.ready === "true";
     }
 
+    function resolveBackendBaseUrl() {
+      const { protocol, hostname, port, origin } = window.location;
+
+      if (protocol === "file:") {
+        return DEFAULT_BACKEND_ORIGIN;
+      }
+
+      if ((hostname === "localhost" || hostname === "127.0.0.1") && port && port !== "3000") {
+        return DEFAULT_BACKEND_ORIGIN;
+      }
+
+      return origin;
+    }
+
+    async function apiFetch(path, options) {
+      return fetch(`${BACKEND_BASE_URL}${path}`, options);
+    }
+
     async function loadHealth() {
       try {
-        const response = await fetch("/health");
+        const response = await apiFetch("/health");
         const payload = await response.json();
         const missing = payload.missing.join(", ");
 
         if (payload.ready.checkout) {
           setNotice(
             elements.configBanner,
-            `Backend Stripe aktif dalam mode <strong>${payload.mode}</strong>.`,
+            `Backend Stripe aktif dalam mode <strong>${payload.mode}</strong> di <strong>${BACKEND_BASE_URL}</strong>.`,
             payload.ready.webhook ? "success" : "warning"
           );
         } else {
-          setNotice(elements.configBanner, `Backend belum lengkap. Tetapkan: <strong>${missing}</strong>.`, "warning");
+          setNotice(
+            elements.configBanner,
+            `Backend di <strong>${BACKEND_BASE_URL}</strong> belum lengkap. Tetapkan: <strong>${missing}</strong>.`,
+            "warning"
+          );
         }
 
         elements.modeStatus.textContent = payload.mode;
@@ -389,7 +414,11 @@
         elements.captureStatus.textContent = payload.terminal.captureMethod;
         elements.webhookStatus.textContent = payload.ready.webhook ? "Aktif" : "Belum diisi";
       } catch (error) {
-        setNotice(elements.configBanner, "Tak dapat sambung ke backend Stripe.", "error");
+        setNotice(
+          elements.configBanner,
+          `Tak dapat sambung ke backend Stripe di <strong>${BACKEND_BASE_URL}</strong>. Pastikan <code>node server.js</code> atau <code>npm start</code> sedang berjalan.`,
+          "error"
+        );
         elements.modeStatus.textContent = "Offline";
         elements.locationStatus.textContent = "Offline";
         elements.captureStatus.textContent = "Offline";
@@ -398,7 +427,7 @@
     }
 
     async function createCheckoutSession(amount) {
-      const response = await fetch("/api/checkout/session", {
+      const response = await apiFetch("/api/checkout/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount })
@@ -414,7 +443,7 @@
     }
 
     async function fetchSessionStatus(sessionId) {
-      const response = await fetch(`/api/checkout/session/${encodeURIComponent(sessionId)}`);
+      const response = await apiFetch(`/api/checkout/session/${encodeURIComponent(sessionId)}`);
       const payload = await response.json();
 
       if (!response.ok) {
