@@ -372,9 +372,25 @@
     }
 
     function resolveBackendBaseUrl() {
-      const { protocol, hostname, port, origin } = window.location;
+      const { protocol, hostname, port, origin, search } = window.location;
+      const params = new URLSearchParams(search);
+      const paramBackend = sanitizeBackendUrl(params.get("backend"));
+      const storedBackend = sanitizeBackendUrl(window.localStorage.getItem("payplus_backend_url"));
+
+      if (paramBackend) {
+        window.localStorage.setItem("payplus_backend_url", paramBackend);
+        return paramBackend;
+      }
+
+      if (storedBackend) {
+        return storedBackend;
+      }
 
       if (protocol === "file:") {
+        return DEFAULT_BACKEND_ORIGIN;
+      }
+
+      if (hostname.endsWith("github.io")) {
         return DEFAULT_BACKEND_ORIGIN;
       }
 
@@ -383,6 +399,20 @@
       }
 
       return origin;
+    }
+
+    function sanitizeBackendUrl(value) {
+      const trimmed = String(value || "").trim().replace(/\/+$/, "");
+
+      if (!trimmed) {
+        return "";
+      }
+
+      if (!/^https?:\/\//i.test(trimmed)) {
+        return "";
+      }
+
+      return trimmed;
     }
 
     async function apiFetch(path, options) {

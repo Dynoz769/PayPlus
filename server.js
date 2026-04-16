@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const os = require("os");
 const path = require("path");
 const Stripe = require("stripe");
 
@@ -8,6 +9,7 @@ const app = express();
 
 const PORT = parsePort(process.env.PORT, 3000);
 const APP_BASE_URL = (process.env.APP_BASE_URL || `http://localhost:${PORT}`).replace(/\/+$/, "");
+const APP_ALLOWED_ORIGINS = parseAllowedOrigins(process.env.APP_ALLOWED_ORIGINS);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "";
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 const STRIPE_CURRENCY = (process.env.STRIPE_CURRENCY || "myr").toLowerCase();
@@ -16,6 +18,32 @@ const STRIPE_TERMINAL_CAPTURE_METHOD = normalizeCaptureMethod(process.env.STRIPE
 
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 const recentEvents = [];
+
+app.set("trust proxy", true);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigin = resolveAllowedOrigin(origin);
+
+  if (allowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+    res.setHeader("Vary", "Origin");
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Stripe-Signature");
+
+  if (req.headers["access-control-request-private-network"] === "true") {
+    res.setHeader("Access-Control-Allow-Private-Network", "true");
+  }
+
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
+
+  next();
+});
 
 app.post("/webhooks/stripe", express.raw({ type: "application/json" }), (req, res) => {
   if (!stripe) {
@@ -47,11 +75,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.get("/health", (req, res) => {
-  res.json(getHealthPayload());
+  res.json(getHealthPayload(req));
 });
 
 app.get("/api/config", (req, res) => {
-  res.json(getHealthPayload());
+  res.json(getHealthPayload(req));
 });
 
 app.post("/api/checkout/session", async (req, res) => {
@@ -67,10 +95,11 @@ app.post("/api/checkout/session", async (req, res) => {
   }
 
   try {
+    const baseUrl = getRequestBaseUrl(req);
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: `${APP_BASE_URL}/?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${APP_BASE_URL}/?status=cancelled`,
+      success_url: `${baseUrl}/?status=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/?status=cancelled`,
       line_items: [
         {
           quantity: 1,
@@ -248,12 +277,39 @@ app.get("*", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`PayPlus Stripe server berjalan pada ${APP_BASE_URL}`);
+  console.log("PayPlus Stripe server berjalan pada:");
+  for (const url of getServerUrls(PORT)) {
+    console.log(`- ${url}`);
+  }
 });
 
 function parsePort(value, fallback) {
   const parsed = Number.parseInt(value, 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseAllowedOrigins(value) {
+  const defaults = [
+    APP_BASE_URL,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://dynoz769.github.io"
+  ];
+
+  const configured = String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return [...new Set([...defaults, ...configured])];
+}
+
+function resolveAllowedOrigin(origin) {
+  if (!origin) {
+    return null;
+  }
+
+  return APP_ALLOWED_ORIGINS.includes(origin) ? origin : null;
 }
 
 function parseAmountToMinor(value) {
@@ -274,6 +330,23 @@ function sanitizeText(value, maxLength) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+function getRequestBaseUrl(req) {
+  const forwardedProto = String(req.headers["x-forwarded-proto"] || "")
+    .split(",")[0]
+    .trim();
+  const forwardedHost = String(req.headers["x-forwarded-host"] || "")
+    .split(",")[0]
+    .trim();
+  const protocol = forwardedProto || req.protocol || "http";
+  const host = forwardedHost || req.get("host");
+
+  if (host) {
+    return `${protocol}://${host}`;
+  }
+
+  return APP_BASE_URL;
+}
+
 function normalizeCaptureMethod(value) {
   if (String(value).toLowerCase() === "automatic") {
     return "automatic";
@@ -282,7 +355,7 @@ function normalizeCaptureMethod(value) {
   return "manual";
 }
 
-function getHealthPayload() {
+function getHealthPayload(req) {
   const missing = [];
 
   if (!STRIPE_SECRET_KEY) {
@@ -298,12 +371,34 @@ function getHealthPayload() {
     missing,
     mode: getStripeMode(STRIPE_SECRET_KEY),
     appBaseUrl: APP_BASE_URL,
+    requestBaseUrl: req ? getRequestBaseUrl(req) : APP_BASE_URL,
     currency: STRIPE_CURRENCY,
     terminal: {
       locationId: STRIPE_TERMINAL_LOCATION_ID || null,
       captureMethod: STRIPE_TERMINAL_CAPTURE_METHOD
     }
   };
+}
+
+function getServerUrls(port) {
+  const urls = new Set([
+    `http://localhost:${port}`,
+    `http://127.0.0.1:${port}`
+  ]);
+
+  const interfaces = os.networkInterfaces();
+
+  for (const group of Object.values(interfaces)) {
+    for (const network of group || []) {
+      if (network.family !== "IPv4" || network.internal) {
+        continue;
+      }
+
+      urls.add(`http://${network.address}:${port}`);
+    }
+  }
+
+  return [...urls];
 }
 
 function getStripeMode(secretKey) {
