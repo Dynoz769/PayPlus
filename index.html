@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mesinkira NFC PayWave Interface</title>
+  <title>Bayar dengan NFC - Mesinkira</title>
   <style>
     :root {
         --primary-blue: #2d59e6;
@@ -31,7 +31,7 @@
       border-radius: 15px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       padding: 40px;
-      width: 350px;
+      width: 400px;
       text-align: center;
     }
 
@@ -56,6 +56,18 @@
       background-color: var(--primary-yellow);
     }
 
+    .input-group {
+      margin-top: 20px;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
     .payment-info {
       margin-top: 20px;
       color: var(--grey-primary);
@@ -78,11 +90,35 @@
 <body>
 
   <div class="container">
-    <h1>PayWave NFC</h1>
-    <p>Silakan sentuh kad NFC anda untuk membayar.</p>
-    
-    <button class="payment-btn">Pembayaran melalui NFC</button>
-    
+    <h1>Bayar Dengan NFC</h1>
+    <p>Masukkan jumlah bayaran anda di bawah.</p>
+
+    <!-- Input for amount -->
+    <div class="input-group">
+      <label for="amount">Jumlah Bayaran (MYR):</label>
+      <input type="number" id="amount" placeholder="Masukkan jumlah bayaran" />
+    </div>
+
+    <!-- Select bank -->
+    <div class="input-group">
+      <label for="bank">Pilih Bank:</label>
+      <select id="bank">
+        <option value="bankA">Maybank</option>
+        <option value="bankB">CIMB</option>
+        <option value="bankC">Public Bank</option>
+        <option value="bankD">RHB</option>
+      </select>
+    </div>
+
+    <!-- Input for bank account -->
+    <div class="input-group">
+      <label for="account">Nombor Akaun Bank:</label>
+      <input type="text" id="account" placeholder="Masukkan nombor akaun bank" />
+    </div>
+
+    <!-- Pay button -->
+    <button class="payment-btn" onclick="processPayment()">Pembayaran melalui NFC</button>
+
     <div class="payment-info">
       <p>Jumlah yang perlu dibayar: <strong>RM 150.00</strong></p>
     </div>
@@ -92,5 +128,24 @@
     </div>
   </div>
 
+  <script>
+    // Simulasi pembayaran NFC
+    function processPayment() {
+      const amount = document.getElementById('amount').value;
+      const bank = document.getElementById('bank').value;
+      const account = document.getElementById('account').value;
+
+      if (!amount || !account) {
+        alert("Sila pastikan semua maklumat telah dimasukkan dengan betul.");
+        return;
+      }
+
+      // Simulate NFC transaction processing
+      alert(`Pembayaran sebanyak RM${amount} berjaya diproses melalui NFC ke akaun ${bank} (${account})`);
+      
+      // You can integrate with actual NFC payment API here
+    }
+  </script>
+  
 </body>
 </html>
