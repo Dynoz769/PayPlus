@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">PayPlus Tap to Pay</string>
+    <string name="app_title">PayPlus Stripe Terminal</string>
+    <string name="backend_url_hint">Backend URL, contoh https://payplus-rweb.onrender.com</string>
+    <string name="location_id_hint">Stripe Terminal location id, contoh tml_xxx</string>
+    <string name="save_config">Simpan konfigurasi</string>
+    <string name="reader_section_title">Sambungan reader Tap to Pay</string>
+    <string name="discover_and_connect">Discover dan connect</string>
+    <string name="disconnect_reader">Disconnect reader</string>
+    <string name="payment_section_title">Ambil bayaran</string>
+    <string name="amount_hint">Jumlah bayaran, contoh 5.00</string>
+    <string name="description_hint">Deskripsi ringkas transaksi</string>
+    <string name="take_payment">Ambil bayaran</string>
+    <string name="status_label">Status</string>
+</resources>

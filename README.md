@@ -4,6 +4,7 @@ Projek ini menyokong dua flow Stripe dalam satu codebase:
 
 1. Hosted Checkout untuk web + QR
 2. Endpoint backend untuk Tap to Pay Android
+3. Scaffold app Android minimum dalam `android-tap-to-pay/`
 
 ## Jalankan lokal
 
@@ -63,3 +64,17 @@ Event minimum yang berguna:
 - `GET /api/terminal/payment-intents/:paymentIntentId`
 - `POST /api/terminal/payment-intents/:paymentIntentId/capture`
 - `POST /api/terminal/payment-intents/:paymentIntentId/cancel`
+
+## Android Tap to Pay
+
+Panduan penuh ada di [docs/stripe-terminal-android.md](./docs/stripe-terminal-android.md).
+
+Scaffold Android ada di [android-tap-to-pay](./android-tap-to-pay/README.md).
+
+Ringkasnya:
+
+1. Cipta `Stripe Terminal location` dalam dashboard
+2. Isi `STRIPE_TERMINAL_LOCATION_ID` pada backend
+3. Isi `PAYPLUS_BACKEND_URL` dan `PAYPLUS_TERMINAL_LOCATION_ID` dalam `android-tap-to-pay/gradle.properties`
+4. Buka folder `android-tap-to-pay` dalam Android Studio
+5. Uji `debug` untuk simulasi, `release` untuk live Tap to Pay
