@@ -3,177 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin & Payment Dashboard</title>
-  <style>
-    /* Styling untuk dashboard */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      margin: 0;
-      padding: 0;
-    }
-
-    .container {
-      max-width: 900px;
-      margin: 50px auto;
-      padding: 30px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    h1 {
-      color: #2d59e6;
-      text-align: center;
-    }
-
-    .dashboard-section {
-      margin-bottom: 30px;
-    }
-
-    .input-group {
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #2d59e6;
-      color: white;
-      padding: 15px;
-      border: none;
-      border-radius: 8px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #1e47a0;
-    }
-
-    .message {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .qr-box, .paywave-box {
-      margin-top: 10px;
-      padding: 20px;
-      background-color: #f0f0f0;
-      border-radius: 10px;
-      display: none;
-    }
-
-    .qr-box img, .paywave-box img {
-      max-width: 100%;
-      height: auto;
-    }
-  </style>
+  <title>Bayar Dengan QR</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
 
-<div class="container">
-
-  <!-- Admin Dashboard Section -->
-  <div class="dashboard-section">
-    <h1>Admin Dashboard</h1>
-    <div class="input-group">
-      <label for="account">Nombor Akaun Bank (Admin)</label>
-      <input type="text" id="admin-account" placeholder="Masukkan nombor akaun bank untuk penerimaan pembayaran" />
-    </div>
-    <button onclick="saveAdminAccount()">Simpan Nombor Akaun</button>
-    <div class="message" id="admin-message"></div>
-  </div>
-
-  <!-- Payment Dashboard Section -->
-  <div class="dashboard-section">
-    <h1>Payment Dashboard</h1>
-    <div class="input-group">
-      <label for="payment-amount">Jumlah Bayaran (MYR)</label>
-      <input type="number" id="payment-amount" placeholder="Masukkan jumlah bayaran" />
-    </div>
-    
-    <div class="input-group">
-      <label for="payment-method">Pilih Kaedah Pembayaran</label>
-      <select id="payment-method">
-        <option value="qr">QR Code</option>
-        <option value="paywave">PayWave (NFC)</option>
-      </select>
-    </div>
-
-    <button onclick="processPayment()">Proses Pembayaran</button>
-
-    <!-- QR and Paywave Options -->
-    <div class="qr-box" id="qr-box">
-      <h3>QR Code Pembayaran</h3>
-      <img src="https://via.placeholder.com/300x300.png?text=QR+Code+Pembayaran" alt="QR Code" />
-      <p>Sila imbas kod QR untuk membuat pembayaran.</p>
-    </div>
-
-    <div class="paywave-box" id="paywave-box">
-      <h3>PayWave NFC</h3>
-      <p>Sentuh kad debit atau kredit anda pada peranti NFC untuk membuat pembayaran.</p>
-    </div>
-  </div>
-
-</div>
+<h1>Bayar Dengan QR Code</h1>
+<button onclick="generateQRCode()">Jana QR Code Pembayaran</button>
+<div id="qr-code"></div>
 
 <script>
-  // Admin Dashboard
-  let adminAccount = localStorage.getItem("adminAccount");
+  function generateQRCode() {
+    // Gantikan dengan URL pembayaran yang anda dapat dari backend
+    const payUrl = "https://toyyibpay.com/abc123";  // Payment URL dari backend
 
-  // Display saved account number (if available)
-  if (adminAccount) {
-    document.getElementById("admin-message").innerHTML = "Nombor akaun telah disimpan: " + adminAccount;
-  }
-
-  // Save Admin Account Number
-  function saveAdminAccount() {
-    const accountNumber = document.getElementById("admin-account").value;
-    if (accountNumber) {
-      adminAccount = accountNumber;
-      localStorage.setItem("adminAccount", adminAccount);
-      document.getElementById("admin-message").innerHTML = "Nombor akaun telah disimpan!";
-    } else {
-      document.getElementById("admin-message").innerHTML = "Sila masukkan nombor akaun yang sah.";
-    }
-  }
-
-  // Payment Dashboard
-  function processPayment() {
-    const amount = document.getElementById("payment-amount").value;
-    const paymentMethod = document.getElementById("payment-method").value;
-
-    if (!amount) {
-      alert("Sila masukkan jumlah bayaran.");
-      return;
-    }
-
-    if (!adminAccount) {
-      alert("Sila simpan nombor akaun terlebih dahulu.");
-      return;
-    }
-
-    if (paymentMethod === "qr") {
-      document.getElementById("qr-box").style.display = "block";
-      document.getElementById("paywave-box").style.display = "none";
-    } else if (paymentMethod === "paywave") {
-      document.getElementById("paywave-box").style.display = "block";
-      document.getElementById("qr-box").style.display = "none";
-    }
-
-    alert(`Bayaran RM${amount} akan diproses menggunakan ${paymentMethod}. Pembayaran akan masuk ke akaun ${adminAccount}`);
+    QRCode.toCanvas(document.getElementById("qr-code"), payUrl, function (err) {
+      if (err) console.error(err);
+    });
   }
 </script>
 
