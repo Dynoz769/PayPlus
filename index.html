@@ -6,207 +6,662 @@
   <title>PayPlus | Stripe</title>
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <style>
+    :root {
+      --sail-white: #ffffff;
+      --sail-gray-50: #f6f9fc;
+      --sail-gray-75: #eef2f7;
+      --sail-gray-100: #e3e8ee;
+      --sail-gray-200: #c9d3df;
+      --sail-gray-300: #aab7c4;
+      --sail-gray-400: #7a889d;
+      --sail-gray-500: #697386;
+      --sail-gray-600: #425466;
+      --sail-gray-700: #243b53;
+      --sail-ink: #0a2540;
+      --sail-blurple: #635bff;
+      --sail-blue: #5469d4;
+      --sail-cyan: #0a8cff;
+      --sail-success: #0f8a5f;
+      --sail-warning: #b45f06;
+      --sail-danger: #d14343;
+      --sail-radius-card: 20px;
+      --sail-radius-box: 14px;
+      --sail-radius-field: 10px;
+      --sail-shadow-small: 0 2px 5px rgba(66, 84, 102, 0.08), 0 1px 1px rgba(66, 84, 102, 0.06);
+      --sail-shadow-medium: 0 7px 14px rgba(66, 84, 102, 0.1), 0 3px 6px rgba(66, 84, 102, 0.08);
+      --sail-focus: 0 0 0 4px rgba(99, 91, 255, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      word-wrap: break-word;
+    }
+
     body {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      color: #17324a;
-      background: linear-gradient(180deg, #fff9f2 0%, #f2ece5 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", "Ubuntu", sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: normal;
+      color: var(--sail-gray-600);
+      background:
+        linear-gradient(180deg, rgba(84, 105, 212, 0.05), transparent 220px),
+        linear-gradient(180deg, var(--sail-gray-50) 0%, #f9fbfd 60%, #eff4f9 100%);
+      min-height: 100vh;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-y: scroll;
+      overscroll-behavior-y: none;
     }
 
-    .shell {
-      width: min(1080px, calc(100% - 24px));
-      margin: 0 auto;
-      padding: 32px 0 48px;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.85;
+      background:
+        linear-gradient(120deg, rgba(99, 91, 255, 0.12), transparent 36%),
+        linear-gradient(135deg, transparent 62%, rgba(10, 140, 255, 0.08) 62%, rgba(10, 140, 255, 0.08) 67%, transparent 67%);
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 42%);
     }
 
-    h1, h2, p {
+    h1, h2, h3, p {
       margin-top: 0;
     }
 
+    h1, h2, h3 {
+      color: var(--sail-ink);
+      letter-spacing: -0.02em;
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 56px;
+    }
+
+    .hero,
+    .card {
+      background: var(--sail-white);
+      border: 1px solid var(--sail-gray-100);
+      box-shadow: var(--sail-shadow-medium);
+      animation: rise 0.28s ease both;
+    }
+
     .hero {
+      margin-bottom: 22px;
+      padding: 28px;
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(110deg, transparent 0 58%, rgba(99, 91, 255, 0.05) 58%, rgba(99, 91, 255, 0.05) 64%, transparent 64%),
+        linear-gradient(128deg, transparent 0 66%, rgba(10, 140, 255, 0.06) 66%, rgba(10, 140, 255, 0.06) 71%, transparent 71%);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(42%, 420px);
+      height: 100%;
+      background: linear-gradient(180deg, rgba(84, 105, 212, 0.04), transparent 70%);
+      clip-path: polygon(28% 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
       margin-bottom: 20px;
     }
 
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: var(--sail-white);
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--sail-blurple) 0%, var(--sail-cyan) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+      color: var(--sail-gray-700);
+      background: var(--sail-gray-50);
+      border: 1px solid var(--sail-gray-100);
+      width: fit-content;
+    }
+
+    .pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--sail-warning);
+      box-shadow: 0 0 0 4px rgba(180, 95, 6, 0.12);
+    }
+
+    .pill.success::before {
+      background: var(--sail-success);
+      box-shadow: 0 0 0 4px rgba(15, 138, 95, 0.12);
+    }
+
+    .pill.warning::before {
+      background: var(--sail-warning);
+      box-shadow: 0 0 0 4px rgba(180, 95, 6, 0.12);
+    }
+
+    .pill.error::before {
+      background: var(--sail-danger);
+      box-shadow: 0 0 0 4px rgba(209, 67, 67, 0.12);
+    }
+
     .eyebrow {
+      margin-bottom: 4px;
       text-transform: uppercase;
       letter-spacing: 0.14em;
-      color: #0c6f86;
-      font-size: 0.82rem;
+      color: var(--sail-blue);
+      font-size: 11px;
       font-weight: 700;
     }
 
+    .hero-title {
+      max-width: 760px;
+      margin-bottom: 14px;
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
     .lede {
-      max-width: 780px;
+      max-width: 760px;
+      margin-bottom: 18px;
+      line-height: 1.65;
+      color: var(--sail-gray-500);
+      font-size: 15px;
+    }
+
+    .feature-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 10px;
+    }
+
+    .feature-card,
+    .status-box,
+    .support-card,
+    .step-card,
+    .metric,
+    .route {
+      border-radius: var(--sail-radius-box);
+      border: 1px solid var(--sail-gray-100);
+      background: var(--sail-gray-50);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    .feature-card {
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--sail-blurple), var(--sail-cyan));
+    }
+
+    .feature-card p,
+    .muted,
+    .status-line,
+    .step-card p,
+    .support-card p {
+      color: var(--sail-gray-500);
       line-height: 1.6;
-      color: #56697b;
     }
 
     .layout {
       display: grid;
-      gap: 20px;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.88fr);
+      gap: 22px;
+      grid-template-columns: minmax(0, 1.02fr) minmax(340px, 0.92fr);
+      align-items: start;
     }
 
     .stack {
       display: grid;
-      gap: 20px;
+      gap: 22px;
     }
 
     .card {
-      background: rgba(255, 252, 248, 0.92);
-      border: 1px solid rgba(23, 50, 74, 0.1);
-      border-radius: 20px;
-      box-shadow: 0 18px 44px rgba(40, 24, 8, 0.1);
-      padding: 22px;
+      border-radius: var(--sail-radius-card);
+      padding: 24px;
+    }
+
+    .card h2 {
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
     }
 
     .field {
       display: grid;
       gap: 8px;
-      margin: 20px 0 16px;
+      margin: 18px 0 16px;
     }
 
     label {
-      font-weight: 700;
+      font-weight: 600;
+      color: var(--sail-gray-700);
     }
 
     input {
-      border: 1px solid rgba(23, 50, 74, 0.14);
-      border-radius: 14px;
-      padding: 12px 14px;
+      width: 100%;
+      border: 1px solid var(--sail-gray-200);
+      border-radius: var(--sail-radius-field);
+      padding: 13px 14px;
       font: inherit;
-      background: #fff;
+      line-height: 20px;
+      background: var(--sail-white);
+      color: var(--sail-ink);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: inset 0 1px 0 rgba(227, 232, 238, 0.8);
     }
 
-    .actions {
-      display: flex;
+    input:focus {
+      outline: none;
+      border-color: rgba(99, 91, 255, 0.42);
+      box-shadow: var(--sail-focus);
+    }
+
+    .preset-grid {
+      display: grid;
       gap: 10px;
-      flex-wrap: wrap;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 18px;
+    }
+
+    .preset-btn,
+    button {
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .preset-btn {
+      border: 1px solid var(--sail-gray-100);
+      padding: 11px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      color: var(--sail-gray-700);
+      background: var(--sail-white);
+      box-shadow: var(--sail-shadow-small);
+    }
+
+    .preset-btn.active {
+      background: rgba(99, 91, 255, 0.08);
+      color: var(--sail-blurple);
+      border-color: rgba(99, 91, 255, 0.22);
+      box-shadow: inset 0 0 0 1px rgba(99, 91, 255, 0.08);
+    }
+
+    .actions,
+    .result-actions {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .result-actions {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .preset-btn:hover,
+    button:hover {
+      transform: translateY(-1px);
     }
 
     button {
-      border: 0;
+      min-height: 46px;
       border-radius: 999px;
       padding: 12px 16px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
+      font-weight: 600;
+      border: 1px solid transparent;
     }
 
     button.primary {
-      background: #0c7b93;
-      color: #fff;
+      color: var(--sail-white);
+      background: linear-gradient(180deg, #6a62ff 0%, #635bff 100%);
+      box-shadow: 0 8px 16px rgba(99, 91, 255, 0.22);
     }
 
     button.secondary {
-      background: rgba(23, 50, 74, 0.08);
-      color: #17324a;
+      color: var(--sail-gray-700);
+      background: var(--sail-white);
+      border-color: var(--sail-gray-100);
+      box-shadow: var(--sail-shadow-small);
+    }
+
+    button.ghost {
+      color: var(--sail-blue);
+      background: rgba(84, 105, 212, 0.07);
+      border-color: rgba(84, 105, 212, 0.08);
+    }
+
+    button:disabled {
+      opacity: 0.68;
+      transform: none;
+      cursor: not-allowed;
     }
 
     .notice {
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin: 0 0 12px;
-      line-height: 1.5;
+      border-radius: var(--sail-radius-box);
+      padding: 14px 16px;
+      margin: 12px 0 0;
+      line-height: 1.55;
+      border: 1px solid transparent;
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .info {
-      background: rgba(12, 123, 147, 0.12);
-      color: #075969;
+      background: rgba(84, 105, 212, 0.08);
+      color: var(--sail-blue);
+      border-color: rgba(84, 105, 212, 0.1);
     }
 
     .warning {
-      background: rgba(184, 115, 0, 0.14);
-      color: #855400;
+      background: rgba(180, 95, 6, 0.08);
+      color: var(--sail-warning);
+      border-color: rgba(180, 95, 6, 0.1);
     }
 
     .success {
-      background: rgba(30, 132, 73, 0.14);
-      color: #17653a;
+      background: rgba(15, 138, 95, 0.08);
+      color: var(--sail-success);
+      border-color: rgba(15, 138, 95, 0.1);
     }
 
     .error {
-      background: rgba(179, 46, 46, 0.14);
-      color: #8d2323;
+      background: rgba(209, 67, 67, 0.08);
+      color: var(--sail-danger);
+      border-color: rgba(209, 67, 67, 0.1);
     }
 
-    .status-line,
-    .muted {
-      color: #5f6d7a;
-      line-height: 1.6;
+    .status-line {
+      min-height: 22px;
+      margin: 16px 0 0;
+      font-weight: 500;
+    }
+
+    .step-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step-card {
+      padding: 14px 16px;
+    }
+
+    .step-number {
+      width: 32px;
+      height: 32px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      color: var(--sail-white);
+      background: linear-gradient(180deg, var(--sail-blue) 0%, var(--sail-blurple) 100%);
     }
 
     .result {
       position: sticky;
-      top: 20px;
+      top: 24px;
+    }
+
+    .result-shell {
+      padding: 18px;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(99, 91, 255, 0.02), transparent 110px),
+        linear-gradient(180deg, var(--sail-white) 0%, #fbfcff 100%);
+      border: 1px solid var(--sail-gray-100);
+      margin-bottom: 16px;
+    }
+
+    .result-empty {
+      min-height: 260px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      border-radius: var(--sail-radius-box);
+      border: 1px dashed var(--sail-gray-200);
+      background: var(--sail-gray-50);
+    }
+
+    .result-empty strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+      color: var(--sail-ink);
+    }
+
+    .session-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(99, 91, 255, 0.08);
+      color: var(--sail-blurple);
+      font-weight: 600;
+      margin-bottom: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .session-chip::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--sail-blurple);
     }
 
     .qr-shell {
       display: grid;
       place-items: center;
       padding: 16px;
-      border-radius: 18px;
-      background: #fff;
-      border: 1px solid rgba(23, 50, 74, 0.08);
+      border-radius: var(--sail-radius-box);
+      background: var(--sail-white);
+      border: 1px solid var(--sail-gray-100);
       margin-bottom: 16px;
     }
 
     #qr-canvas {
       width: 100%;
-      max-width: 280px;
+      max-width: 300px;
       height: auto;
     }
 
+    .metric-list,
+    .status-grid,
+    .route-list,
+    .support-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .metric-list {
+      margin-bottom: 16px;
+    }
+
     .metric,
-    .route {
-      background: rgba(23, 50, 74, 0.05);
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
+    .route,
+    .support-card {
+      padding: 14px 16px;
     }
 
     .metric span {
       display: block;
-      font-size: 0.85rem;
-      color: #5f6d7a;
-      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--sail-gray-400);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .metric strong,
+    .metric a {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--sail-ink);
+      overflow-wrap: anywhere;
+    }
+
+    .metric a {
+      color: var(--sail-blue);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .backend-card {
+      margin-top: 22px;
+    }
+
+    .backend-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: minmax(0, 1.04fr) minmax(280px, 0.96fr);
     }
 
     .status-grid {
-      display: grid;
-      gap: 12px;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       margin-top: 16px;
+      margin-bottom: 16px;
     }
 
     .status-box {
-      background: rgba(23, 50, 74, 0.05);
-      border-radius: 16px;
-      padding: 12px 14px;
+      padding: 14px 16px;
+    }
+
+    .status-box span {
+      color: var(--sail-gray-400);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .status-box strong {
       display: block;
-      margin-top: 4px;
+      margin-top: 5px;
+      color: var(--sail-ink);
+    }
+
+    .route-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .route {
       font-family: Consolas, monospace;
       overflow-wrap: anywhere;
+      color: var(--sail-gray-600);
+      background: var(--sail-white);
+    }
+
+    .support-card ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+      color: var(--sail-gray-500);
+      line-height: 1.6;
+    }
+
+    .support-card li + li {
+      margin-top: 6px;
+    }
+
+    .backend-base {
+      margin-top: 8px;
+      font-family: Consolas, monospace;
+      color: var(--sail-gray-500);
+      font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     a {
-      color: #0d5e92;
+      color: var(--sail-blue);
       word-break: break-word;
     }
 
-    @media (max-width: 880px) {
+    code {
+      font-family: Consolas, monospace;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
       .layout,
-      .status-grid {
+      .backend-grid,
+      .feature-grid,
+      .status-grid,
+      .route-list {
         grid-template-columns: 1fr;
       }
 
@@ -214,19 +669,67 @@
         position: static;
       }
     }
+
+    @media (max-width: 720px) {
+      .hero,
+      .card {
+        padding: 20px;
+        border-radius: 18px;
+      }
+
+      .preset-grid,
+      .actions,
+      .result-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-title {
+        font-size: clamp(1.8rem, 9vw, 2.8rem);
+      }
+    }
   </style>
 </head>
 <body>
   <main class="shell">
     <section class="hero">
-      <p class="eyebrow">PayPlus x Stripe</p>
-      <h1>Satu backend untuk web checkout, QR, dan Tap to Pay Android.</h1>
+      <div class="hero-top">
+        <div class="brand-lockup">
+          <div class="brand-mark">P+</div>
+          <div>
+            <p class="eyebrow">PayPlus x Stripe</p>
+            <strong>Checkout interface untuk iPhone dan web</strong>
+          </div>
+        </div>
+
+        <div class="badge-row">
+          <div id="backend-badge" class="pill warning">Semak backend</div>
+          <div id="surface-badge" class="pill">QR + web checkout</div>
+        </div>
+      </div>
+
+      <h1 class="hero-title">Satu skrin untuk jana pautan bayaran, tunjuk QR, dan buka checkout terus dari phone.</h1>
       <p class="lede">
-        Halaman ini akan create Stripe Hosted Checkout dari backend anda. QR dijana daripada URL Checkout itu.
-        Backend yang sama juga sediakan endpoint untuk Stripe Terminal Android.
+        Interface ini fokus pada flow yang memang praktikal sekarang: Stripe Hosted Checkout, QR, pautan share,
+        dan pengalaman yang lebih kemas untuk iPhone. Backend Android Tap to Pay masih kekal, tetapi diasingkan
+        supaya web interface ini rasa lebih jelas dan tidak mengelirukan.
       </p>
       <div id="config-banner" class="notice hidden"></div>
       <div id="return-banner" class="notice hidden"></div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>Pautan terus</h3>
+          <p>Jana Checkout Session Stripe dan terus kongsi ke Safari, WhatsApp, DM, atau saluran jualan anda.</p>
+        </article>
+        <article class="feature-card">
+          <h3>QR segera</h3>
+          <p>QR dijana terus daripada URL checkout supaya pelanggan boleh scan dan bayar tanpa menaip apa-apa.</p>
+        </article>
+        <article class="feature-card">
+          <h3>Mesra iPhone</h3>
+          <p>Web ini fokus pada checkout, bukan cuba memaksa browser jadi terminal payWave yang memang tak sesuai.</p>
+        </article>
+      </div>
     </section>
 
     <section class="layout">
@@ -234,8 +737,8 @@
         <article class="card">
           <h2>Stripe Hosted Checkout + QR</h2>
           <p class="muted">
-            Flow paling cepat siap. Masukkan jumlah, backend create Checkout Session, kemudian anda boleh buka URL Stripe
-            atau scan QR yang terhasil.
+            Masukkan jumlah atau pilih amaun pantas. Backend akan create Checkout Session baharu dan hasilnya terus
+            muncul di panel kanan.
           </p>
 
           <form id="checkout-form">
@@ -244,25 +747,114 @@
               <input id="amount" name="amount" type="number" min="1" step="0.01" placeholder="10.00" required>
             </div>
 
+            <div class="preset-grid">
+              <button class="preset-btn" type="button" data-amount="5.00">RM 5</button>
+              <button class="preset-btn" type="button" data-amount="10.00">RM 10</button>
+              <button class="preset-btn" type="button" data-amount="20.00">RM 20</button>
+              <button class="preset-btn" type="button" data-amount="50.00">RM 50</button>
+            </div>
+
             <div class="actions">
               <button id="submit-btn" class="primary" type="submit">Jana Checkout</button>
               <button id="reset-btn" class="secondary" type="button">Kosongkan hasil</button>
             </div>
 
-            <div style="margin-top:16px;">
-              <div id="form-message" class="notice hidden"></div>
-              <p id="status-line" class="status-line"></p>
-            </div>
+            <div id="form-message" class="notice hidden"></div>
+            <p id="status-line" class="status-line"></p>
           </form>
         </article>
 
         <article class="card">
-          <h2>Tap to Pay Android Backend</h2>
+          <h2>Flow kutipan di phone</h2>
           <p class="muted">
-            Browser ini bukan terminal payWave. Bahagian ini hanya tunjuk bahawa backend tempatan sudah ada route
-            untuk digunakan oleh Stripe Terminal Android SDK.
+            Untuk iPhone dan web, inilah flow yang paling stabil dan paling cepat digunakan sekarang.
           </p>
 
+          <div class="step-list">
+            <article class="step-card">
+              <div class="step-number">1</div>
+              <h3>Jana checkout</h3>
+              <p>Buat satu session bayaran dengan jumlah yang anda mahu kutip.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-number">2</div>
+              <h3>Kongsi cara bayar</h3>
+              <p>Pilih sama ada buka terus, salin link, kongsi, atau tunjuk QR kepada pelanggan.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-number">3</div>
+              <h3>Biarkan Stripe urus checkout</h3>
+              <p>Pelanggan bayar di hosted checkout. Status kejayaan atau batal akan dipaparkan semula pada skrin ini.</p>
+            </article>
+          </div>
+        </article>
+      </div>
+
+      <aside id="result-panel" class="card result">
+        <h2>Panel checkout</h2>
+        <p class="muted">QR, session id, pautan pembayaran, dan aksi cepat dikumpulkan di sini.</p>
+
+        <div class="result-shell">
+          <div id="result-empty" class="result-empty">
+            <div>
+              <strong>Belum ada checkout aktif</strong>
+              <p class="muted">
+                Bila anda tekan <em>Jana Checkout</em>, panel ini akan papar QR, pautan, dan butang kongsi.
+              </p>
+            </div>
+          </div>
+
+          <div id="result-content" class="hidden">
+            <div id="session-chip" class="session-chip">Session belum dijana</div>
+
+            <div class="qr-shell">
+              <canvas id="qr-canvas"></canvas>
+            </div>
+
+            <div class="metric-list">
+              <div class="metric">
+                <span>Jumlah</span>
+                <strong id="amount-display">RM 0.00</strong>
+              </div>
+
+              <div class="metric">
+                <span>Checkout Session</span>
+                <strong id="session-id">-</strong>
+              </div>
+
+              <div class="metric">
+                <span>Pautan Checkout</span>
+                <a id="checkout-link" href="#" target="_blank" rel="noreferrer">-</a>
+              </div>
+            </div>
+
+            <div class="result-actions">
+              <button id="open-link-btn" class="primary" type="button">Buka</button>
+              <button id="copy-link-btn" class="secondary" type="button">Salin link</button>
+              <button id="share-link-btn" class="ghost" type="button">Kongsi</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="metric">
+          <span>Checkout surfaces yang sesuai pada iPhone</span>
+          <strong>QR, pautan, Stripe checkout, dan Apple Pay pada hosted checkout jika disokong.</strong>
+        </div>
+      </aside>
+    </section>
+
+    <section class="card backend-card">
+      <h2>Backend dan compatibility</h2>
+      <p class="muted">
+        Bahagian ini membezakan dengan jelas apa yang memang hidup dalam web interface ini dan apa yang hanya tersedia
+        melalui app Android native.
+      </p>
+      <div class="backend-base">Backend base: <span id="backend-base"></span></div>
+
+      <div class="backend-grid">
+        <div>
           <div class="status-grid">
             <div class="status-box">Mode<strong id="mode-status">-</strong></div>
             <div class="status-box">Location<strong id="location-status">-</strong></div>
@@ -270,41 +862,38 @@
             <div class="status-box">Webhook<strong id="webhook-status">-</strong></div>
           </div>
 
-          <div style="margin-top:16px;">
+          <div class="route-list">
+            <div class="route">POST /api/checkout/session</div>
+            <div class="route">GET /api/checkout/session/:id</div>
             <div class="route">POST /api/terminal/connection-token</div>
             <div class="route">POST /api/terminal/payment-intents</div>
             <div class="route">POST /api/terminal/payment-intents/:id/capture</div>
             <div class="route">POST /api/terminal/payment-intents/:id/cancel</div>
           </div>
-        </article>
+        </div>
+
+        <div class="support-grid">
+          <article class="support-card">
+            <h3>iPhone / web</h3>
+            <p>Inilah flow aktif dalam interface ini sekarang.</p>
+            <ul>
+              <li>Stripe Hosted Checkout</li>
+              <li>QR untuk scan dari phone pelanggan</li>
+              <li>Link terus untuk Safari, WhatsApp, atau DM</li>
+            </ul>
+          </article>
+
+          <article class="support-card">
+            <h3>Android native</h3>
+            <p>Backend Terminal hidup, tetapi payWave sebenar tetap perlukan app Android native yang berasingan.</p>
+            <ul>
+              <li>Connection token endpoint sudah siap</li>
+              <li>PaymentIntent create/capture/cancel sudah siap</li>
+              <li>Scaffold app ada dalam folder <code>android-tap-to-pay</code></li>
+            </ul>
+          </article>
+        </div>
       </div>
-
-      <aside id="result-panel" class="card result hidden">
-        <h2>Hasil Checkout</h2>
-        <div class="qr-shell">
-          <canvas id="qr-canvas"></canvas>
-        </div>
-
-        <div class="metric">
-          <span>Jumlah</span>
-          <strong id="amount-display">RM 0.00</strong>
-        </div>
-
-        <div class="metric">
-          <span>Checkout Session</span>
-          <strong id="session-id">-</strong>
-        </div>
-
-        <div class="metric">
-          <span>Pautan Checkout</span>
-          <a id="checkout-link" href="#" target="_blank" rel="noreferrer">-</a>
-        </div>
-
-        <div class="actions">
-          <button id="open-link-btn" class="secondary" type="button">Buka Checkout</button>
-          <button id="copy-link-btn" class="secondary" type="button">Salin pautan</button>
-        </div>
-      </aside>
     </section>
   </main>
 
@@ -320,17 +909,25 @@
       statusLine: document.getElementById("status-line"),
       configBanner: document.getElementById("config-banner"),
       returnBanner: document.getElementById("return-banner"),
+      backendBadge: document.getElementById("backend-badge"),
+      surfaceBadge: document.getElementById("surface-badge"),
+      backendBase: document.getElementById("backend-base"),
       resultPanel: document.getElementById("result-panel"),
+      resultEmpty: document.getElementById("result-empty"),
+      resultContent: document.getElementById("result-content"),
+      sessionChip: document.getElementById("session-chip"),
       qrCanvas: document.getElementById("qr-canvas"),
       amountDisplay: document.getElementById("amount-display"),
       sessionId: document.getElementById("session-id"),
       checkoutLink: document.getElementById("checkout-link"),
       openLink: document.getElementById("open-link-btn"),
       copyLink: document.getElementById("copy-link-btn"),
+      shareLink: document.getElementById("share-link-btn"),
       modeStatus: document.getElementById("mode-status"),
       locationStatus: document.getElementById("location-status"),
       captureStatus: document.getElementById("capture-status"),
-      webhookStatus: document.getElementById("webhook-status")
+      webhookStatus: document.getElementById("webhook-status"),
+      presetButtons: [...document.querySelectorAll(".preset-btn")]
     };
 
     const tones = ["info", "warning", "success", "error"];
@@ -348,6 +945,14 @@
       element.classList.remove(...tones);
     }
 
+    function setBadge(element, label, tone) {
+      element.textContent = label;
+      element.classList.remove("success", "warning", "error");
+      if (tone) {
+        element.classList.add(tone);
+      }
+    }
+
     function formatCurrency(value) {
       return new Intl.NumberFormat("ms-MY", {
         style: "currency",
@@ -359,12 +964,26 @@
     function resetResult() {
       const context = elements.qrCanvas.getContext("2d");
       context.clearRect(0, 0, elements.qrCanvas.width, elements.qrCanvas.height);
-      elements.resultPanel.classList.add("hidden");
+      elements.resultEmpty.classList.remove("hidden");
+      elements.resultContent.classList.add("hidden");
       elements.amountDisplay.textContent = formatCurrency(0);
+      elements.sessionChip.textContent = "Session belum dijana";
       elements.sessionId.textContent = "-";
       elements.checkoutLink.textContent = "-";
       elements.checkoutLink.href = "#";
       elements.checkoutLink.dataset.ready = "false";
+    }
+
+    function syncPresetState() {
+      const value = Number.parseFloat(elements.amount.value || "");
+
+      elements.presetButtons.forEach((button) => {
+        const amount = Number.parseFloat(button.dataset.amount || "");
+        button.classList.toggle(
+          "active",
+          Number.isFinite(value) && Number.isFinite(amount) && value === amount
+        );
+      });
     }
 
     function hasCheckoutLink() {
@@ -420,6 +1039,8 @@
     }
 
     async function loadHealth() {
+      elements.backendBase.textContent = BACKEND_BASE_URL;
+
       try {
         const response = await apiFetch("/health");
         const payload = await response.json();
@@ -431,12 +1052,20 @@
             `Backend Stripe aktif dalam mode <strong>${payload.mode}</strong> di <strong>${BACKEND_BASE_URL}</strong>.`,
             payload.ready.webhook ? "success" : "warning"
           );
+          setBadge(
+            elements.backendBadge,
+            payload.ready.webhook ? `Backend ${payload.mode}` : `Backend ${payload.mode}, webhook belum penuh`,
+            payload.ready.webhook ? "success" : "warning"
+          );
+          setBadge(elements.surfaceBadge, "QR + link + web checkout");
         } else {
           setNotice(
             elements.configBanner,
             `Backend di <strong>${BACKEND_BASE_URL}</strong> belum lengkap. Tetapkan: <strong>${missing}</strong>.`,
             "warning"
           );
+          setBadge(elements.backendBadge, "Backend belum lengkap", "warning");
+          setBadge(elements.surfaceBadge, "Semak konfigurasi", "warning");
         }
 
         elements.modeStatus.textContent = payload.mode;
@@ -449,6 +1078,8 @@
           `Tak dapat sambung ke backend Stripe di <strong>${BACKEND_BASE_URL}</strong>. Pastikan <code>node server.js</code> atau <code>npm start</code> sedang berjalan.`,
           "error"
         );
+        setBadge(elements.backendBadge, "Backend offline", "error");
+        setBadge(elements.surfaceBadge, "Checkout tidak tersedia", "error");
         elements.modeStatus.textContent = "Offline";
         elements.locationStatus.textContent = "Offline";
         elements.captureStatus.textContent = "Offline";
@@ -513,6 +1144,7 @@
 
     async function renderCheckout(amount, payload) {
       elements.amountDisplay.textContent = formatCurrency(amount);
+      elements.sessionChip.textContent = `Session aktif: ${payload.id}`;
       elements.sessionId.textContent = payload.id;
       elements.checkoutLink.textContent = payload.url;
       elements.checkoutLink.href = payload.url;
@@ -524,7 +1156,8 @@
         color: { dark: "#17324a", light: "#ffffff" }
       });
 
-      elements.resultPanel.classList.remove("hidden");
+      elements.resultEmpty.classList.add("hidden");
+      elements.resultContent.classList.remove("hidden");
     }
 
     async function handleSubmit(event) {
@@ -578,17 +1211,57 @@
       }
     }
 
+    async function shareCheckout() {
+      if (!hasCheckoutLink()) {
+        setNotice(elements.formMessage, "Tiada pautan checkout lagi.", "warning");
+        return;
+      }
+
+      if (!navigator.share) {
+        setNotice(elements.formMessage, "Browser ini tidak sokong fungsi kongsi terus.", "warning");
+        return;
+      }
+
+      try {
+        await navigator.share({
+          title: "PayPlus Checkout",
+          text: `Bayaran ${elements.amountDisplay.textContent}`,
+          url: elements.checkoutLink.href
+        });
+      } catch (error) {
+        if (error && error.name !== "AbortError") {
+          setNotice(elements.formMessage, "Gagal membuka panel kongsi.", "error");
+        }
+      }
+    }
+
     elements.form.addEventListener("submit", handleSubmit);
     elements.reset.addEventListener("click", () => {
       elements.form.reset();
+      syncPresetState();
       clearNotice(elements.formMessage);
       resetResult();
       elements.statusLine.textContent = "";
     });
     elements.openLink.addEventListener("click", openCheckout);
     elements.copyLink.addEventListener("click", copyCheckout);
+    elements.shareLink.addEventListener("click", shareCheckout);
+    elements.amount.addEventListener("input", syncPresetState);
+
+    elements.presetButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        elements.amount.value = button.dataset.amount || "";
+        syncPresetState();
+        elements.amount.focus();
+      });
+    });
+
+    if (!navigator.share) {
+      elements.shareLink.classList.add("hidden");
+    }
 
     resetResult();
+    syncPresetState();
     loadHealth();
     renderReturnStatus();
   </script>
